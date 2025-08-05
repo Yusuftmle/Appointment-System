@@ -1,0 +1,848 @@
+﻿@inject IBlogPostService blogPostService
+@using Application.Queries.Blog
+
+
+@page "/"
+
+<PageTitle>Ankara Psikolog | Uzman Psikolojik Danışmanlık | Meridyen Psikoloji</PageTitle>
+
+<main class="main">
+    <!-- Breadcrumb Schema -->
+    <nav aria-label="breadcrumb" style="display: none;">
+        <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/">
+                    <span itemprop="name">Anasayfa</span>
+                </a>
+                <meta itemprop="position" content="1" />
+            </li>
+        </ol>
+    </nav>
+
+    <section id="hero" class="hero section">
+        <!-- Alt Text Improvements -->
+        <img src="assets/img/hero-bg.jpg"
+             alt="Ankara Çankaya'da bulunan Meridyen Psikoloji kliniği terapi odası - çift terapisi ve evlilik danışmanlığı için modern, huzurlu ortam"
+             loading="eager" data-aos="fade-in">
+
+        <div class="container text-center" data-aos="zoom-out" data-aos-delay="100">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- SEO Optimize H1 -->
+                    <h1 class="display-4 fw-bold mb-3">
+                        Meridyen Psikoloji | Çift Terapisi & Evlilik Danışmanlığı
+                    </h1>
+                    <p class="lead mb-4">
+                        Çankaya, Yenimahalle ve Oran'da 7+ yıl deneyimli uzman psikolog ile çift terapisi,
+                        evlilik danışmanlığı, bireysel terapi ve online psikoloji seansları.
+                        Ücretsiz ön görüşme için hemen randevu alın.
+                    </p>
+                    <div class="hero-quote">
+                        <i class="bi bi-quote quote-icon"></i>
+                        <p class="d-inline">"Kendinizi keşfetme yolculuğunuzda yanınızdayım"</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/rezervasyon" class="btn-get-started me-3"
+                           aria-label="Ankara psikolog randevu al">Randevu Al</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section - LSI Keywords ile zenginleştirildi -->
+    <section id="services" class="services section">
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Ankara Psikoloji Hizmetlerimiz</h2>
+            <p>Çankaya, Yenimahalle, Oran ve Çukurambar'da uzman psikolojik danışmanlık ve terapi hizmetleri sunuyoruz.</p>
+        </div>
+
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-item item-cyan position-relative">
+                        <div class="icon">
+                            <i class="fas fa-user-friends fa-3x"></i>
+                        </div>
+                        <h3>Bireysel Psikolojik Danışmanlık</h3>
+                        <p>Ankara'da kişisel gelişim, stres yönetimi, kaygı bozuklukları ve depresyon tedavisi için bire bir uzman psikolojik destek.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-item item-orange position-relative">
+                        <div class="icon">
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                        <h3>Çift Terapisi ve Evlilik Danışmanlığı</h3>
+                        <p>Çankaya'da çift terapisi, evlilik öncesi danışmanlık ve ilişki sorunları için profesyonel terapi hizmetleri.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-item item-teal position-relative">
+                        <div class="icon">
+                            <i class="fas fa-child fa-3x"></i>
+                        </div>
+                        <h3>Çocuk ve Ergen Psikoloğu</h3>
+                        <p>Ankara'da çocuk ve ergenlerde görülen davranış problemleri, okul kaygısı ve gelişimsel sorunlar için uzman desteği.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="service-item item-red position-relative">
+                        <div class="icon">
+                            <i class="fas fa-brain fa-3x"></i>
+                        </div>
+                        <h3>Kaygı ve Depresyon Tedavisi</h3>
+                        <p>Panik atak, yaygın kaygı bozukluğu, depresyon ve duygudurum bozuklukları için bilişsel davranışçı terapi yaklaşımı.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="service-item item-indigo position-relative">
+                        <div class="icon">
+                            <i class="fas fa-heartbeat fa-3x"></i>
+                        </div>
+                        <h3>Stres Yönetimi ve İş Yaşamı</h3>
+                        <p>İş stresi, tükenmişlik sendromu, iş-yaşam dengesi kurma ve kariyer danışmanlığı hizmetleri.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="service-item item-pink position-relative">
+                        <div class="icon">
+                            <i class="fas fa-comments fa-3x"></i>
+                        </div>
+                        <h3>Online Psikoloji Danışmanlığı</h3>
+                        <p>Ankara dışından da erişebileceğiniz güvenli online terapi seansları ve uzaktan psikolojik destek.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section class="py-5 bg-light" data-aos="fade-up" data-aos-delay="800">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 mb-5 mb-lg-0 pe-lg-5">
+                    <h2 class="fw-bold mb-4 display-5 text-primary">Meridyen Psikoloji Blog</h2>
+                    <p class="lead text-muted mb-4">Ankara'da psikoloji alanındaki bilimsel bilgi ve birikimimizi etik ilke ve mesleki sorumluluklara bağlı biçimde danışanlarımızın en yüksek yararını gözeterek paylaşıyoruz.</p>
+                    <a href="/blog" class="btn btn-primary btn-lg px-4 py-3 rounded-pill shadow-sm">
+                        TÜM PSİKOLOJİ MAKALELERİ <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="row g-4">
+                        @foreach (var blog in BlogList)
+                        {
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card border-0 h-100 shadow-sm" style="transition: transform 0.3s;">
+                                    <div style="height: 200px; overflow: hidden;">
+                                        @if (!string.IsNullOrEmpty(blog.CoverImageUrl))
+                                        {
+                                            <img src="@blog.CoverImageUrl" class="w-100 h-100"
+                                                 style="object-fit: cover;"
+                                                 alt="@blog.Title - Ankara psikolog makalesi"
+                                                 loading="lazy">
+                                        }
+                                        else
+                                        {
+                                            <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white">
+                                                <i class="fas fa-image fa-3x"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <small class="text-muted">@blog.CreatedAt.ToString("MMMM dd, yyyy")</small>
+                                        <h3 class="card-title mt-2 mb-3 h5">@blog.Title</h3>
+                                        <a href="@($"/blog/{blog.Slug}")" class="text-decoration-none fw-semibold text-primary"
+                                           aria-label="@blog.Title makalesini okuyun">
+                                            DEVAMINI OKUYUN <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <br />
+    </section>
+
+    <!-- Testimonials Section - Review Schema ile -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-title text-center mb-5">
+                <h2>Ankara Psikolog Yorumları</h2>
+                <p>Danışanlarımızın deneyimleri</p>
+            </div>
+        </div>
+
+        <div class="testimonials-container" @onmouseenter="StopAutoplay" @onmouseleave="StartAutoplay">
+            <div class="testimonials-wrapper slide-@CurrentIndex">
+                @foreach (var testimonial in Testimonials)
+                {
+                    <div class="testimonial-card @(IsVisible(testimonial) ? "fade-in" : "")"
+                         itemscope itemtype="https://schema.org/Review">
+                        <div class="quote-icon">❝</div>
+                        <div class="stars" itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                            <meta itemprop="ratingValue" content="@testimonial.Rating">
+                            <meta itemprop="bestRating" content="5">
+                            @for (int i = 0; i < testimonial.Rating; i++)
+                            {
+                                <span>★</span>
+                            }
+                        </div>
+                        <p class="testimonial-text" itemprop="reviewBody">@testimonial.Text</p>
+                        <div class="client-info" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                            <div class="client-avatar">@testimonial.InitialAvatar</div>
+                            <div class="client-details">
+                                <h4 itemprop="name">@testimonial.ClientName</h4>
+                                <p>@testimonial.ClientInfo</p>
+                            </div>
+                        </div>
+                        <meta itemprop="datePublished" content="2024-01-01">
+                        <div itemprop="itemReviewed" itemscope itemtype="https://schema.org/LocalBusiness" style="display: none;">
+                            <span itemprop="name">Meridyen Psikoloji</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button type="button" class="nav-btn" @onclick="PreviousSlide" disabled="@(CurrentIndex == 0)"
+                    aria-label="Önceki yorum">
+                ‹
+            </button>
+            <button type="button" class="nav-btn" @onclick="NextSlide" disabled="@(CurrentIndex == Testimonials.Count - 1)"
+                    aria-label="Sonraki yorum">
+                ›
+            </button>
+        </div>
+
+        <div class="indicators">
+            @for (int i = 0; i < Testimonials.Count; i++)
+            {
+                var index = i;
+                <button type="button" class="indicator @(index == CurrentIndex ? "active" : "")"
+                        @onclick="() => GoToSlide(index)"
+                        aria-label="@(index + 1). yoruma git"></button>
+            }
+        </div>
+    </section>
+
+    <!-- FAQ Section - SEO için kritik -->
+    <section id="faq" class="faq section bg-light py-5">
+        <div class="container">
+            <div class="section-title text-center mb-5" data-aos="fade-up">
+                <h2>Sıkça Sorulan Sorular</h2>
+                <p>Psikolojik danışmanlık hizmetlerimiz hakkında merak ettikleriniz</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq1" aria-expanded="false">
+                                    <span itemprop="name">Çift terapisi nasıl işler ve kaç seans sürer?</span>
+                                </button>
+                            </h3>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Çift terapisi, ilişkinizdeki sorunları çözmek için tasarlanmış profesyonel bir süreçtir.
+                                        Genellikle 8-12 seans arasında sürer ve her seans 50 dakikadır. Ankara'daki kliniğimizde
+                                        hem yüz yüze hem de online seanslar düzenliyoruz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq2" aria-expanded="false">
+                                    <span itemprop="name">Online psikolog seansları etkili midir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Evet, online terapi seansları yüz yüze seanslar kadar etkilidir. Güvenli video konferans
+                                        platformları kullanarak, kendi konforunuzda terapi alabilirsiniz. Ankara dışından da
+                                        hizmet verebiliyoruz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq3" aria-expanded="false">
+                                    <span itemprop="name">Evlilik danışmanlığı ne zaman gereklidir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        İletişim sorunları, güven problemleri, cinsellik konuları veya sürekli çatışmalar yaşıyorsanız
+                                        evlilik danışmanlığından faydalanabilirsiniz. Erken müdahale ilişkinizi kurtarabilir.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq4" aria-expanded="false">
+                                    <span itemprop="name">Psikoloji seansları gizli midir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Kesinlikle! Tüm terapi seansları gizlilik ilkesi çerçevesinde yürütülür. Kişisel bilgileriniz
+                                        ve paylaştıklarınız tamamen korunur ve üçüncü kişilerle paylaşılmaz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yeni Eklenen SEO Optimized FAQ'ler -->
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq5" aria-expanded="false">
+                                    <span itemprop="name">Ankara'da en iyi psikolog kimdir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Uzm. Psk. Dan. Hatice Cağıl Kandemir, Ankara'da 7+ yıl deneyimi ile çift terapisi,
+                                        evlilik danışmanlığı ve bireysel terapi alanlarında uzmanlaşmış,
+                                        binlerce başarılı seans gerçekleştirmiş bir psikolojik danışmandır.
+                                        Çankaya, Yenimahalle ve Oran'daki kliniklerimizde hem yüz yüze hem online hizmet vermektedir.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq6" aria-expanded="false">
+                                    <span itemprop="name">Ankara psikolog seansı ücreti ne kadar?</span>
+                                </button>
+                            </h3>
+                            <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Meridyen Psikoloji'de bireysel terapi seansları 800-1200 TL, çift terapisi seansları
+                                        1000-1500 TL arasında değişmektedir. İlk seans ücretsiz ön görüşme imkanı sunuyoruz.
+                                        Online seanslar için %15 indirim uygulanmaktadır. Detaylı fiyat bilgisi için
+                                        randevu hattımızı arayabilirsiniz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq7" aria-expanded="false">
+                                    <span itemprop="name">Çift terapisi ne kadar sürer Ankara'da?</span>
+                                </button>
+                            </h3>
+                            <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Ankara'da çift terapisi genellikle 8-16 seans arasında sürmektedir.
+                                        Her seans 60-75 dakika olup, haftalık düzenlenir. İlişkideki sorunların
+                                        karmaşıklığına göre süre değişebilir. Meridyen Psikoloji'de çiftlerin
+                                        %85'i ilk 12 seans sonunda belirgin iyileşme rapor etmektedir.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq8" aria-expanded="false">
+                                    <span itemprop="name">Evlilik öncesi danışmanlık gerekli midir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Evlilik öncesi danışmanlık, çiftlerin gelecekteki muhtemel sorunları önceden tespit etmelerini
+                                        ve sağlıklı iletişim becerileri geliştirmelerini sağlar. Ankara'da birçok çift,
+                                        evlilik öncesi 3-5 seans danışmanlık alarak daha mutlu evlilik yaşamaktadır.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq9" aria-expanded="false">
+                                    <span itemprop="name">Depresyon tedavisi ne kadar sürer?</span>
+                                </button>
+                            </h3>
+                            <div id="faq9" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Depresyon tedavisi kişinin durumuna göre değişir. Hafif depresyon 8-12 seans,
+                                        orta ve ağır depresyon 16-24 seans sürebilir. Bilişsel Davranışçı Terapi (BDT)
+                                        yöntemiyle Ankara'daki kliniğimizde başarılı sonuçlar elde etmekteyiz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq10" aria-expanded="false">
+                                    <span itemprop="name">Panik atak tedavisi mümkün müdür?</span>
+                                </button>
+                            </h3>
+                            <div id="faq10" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Evet, panik atak tedavisi oldukça başarılıdır. Bilişsel Davranışçı Terapi (BDT)
+                                        ve maruz bırakma terapisi teknikleriyle panik atakların sıklığı ve şiddeti
+                                        önemli ölçüde azaltılabilir. Ankara'daki kliniğimizde panik atak tedavisinde
+                                        %90'ın üzerinde başarı oranına sahipiz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq11" aria-expanded="false">
+                                    <span itemprop="name">Çocuk psikoloğu ne zaman gereklidir?</span>
+                                </button>
+                            </h3>
+                            <div id="faq11" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Çocuğunuzda davranış problemleri, okul reddi, uyku sorunları, kaygı belirtileri,
+                                        sosyal uyum problemleri veya akademik başarı düşüklüğü gözleniyorsa çocuk psikoloğuna
+                                        başvurmanız önerilir. Ankara'da çocuk ve ergen psikolojisi hizmeti vermekteyiz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item mb-3" itemscope itemtype="https://schema.org/Question">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#faq12" aria-expanded="false">
+                                    <span itemprop="name">Psikolojik destek alamayan kişiler ne yapmalı?</span>
+                                </button>
+                            </h3>
+                            <div id="faq12" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body" itemscope itemtype="https://schema.org/Answer">
+                                    <div itemprop="text">
+                                        Ankara'da ulaşım zorluğu yaşayan kişiler için online terapi seansları sunuyoruz.
+                                        Ayrıca ekonomik zorluk yaşayan danışanlar için uygun ödeme planları ve
+                                        kısmi burs imkanları mevcuttur. Hiç kimse psikolojik destekten mahrum kalmamalıdır.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+@code {
+    private List<BlogPostListItemDto> BlogList = new List<BlogPostListItemDto>();
+    private int CurrentIndex = 0;
+    private Timer? AutoplayTimer;
+    private bool IsAutoplayActive = true;
+    private readonly int AutoplayDelay = 5000;
+    private bool StatsAnimated = false;
+    @inject IJSRuntime JS
+    private CancellationTokenSource? _cancellationTokenSource;
+
+    public class TestimonialItem
+    {
+        public string Text { get; set; } = "";
+        public string ClientName { get; set; } = "";
+        public string ClientInfo { get; set; } = "";
+        public string InitialAvatar { get; set; } = "";
+        public int Rating { get; set; } = 5;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Enhanced Title - LSI keywords ile
+            await JS.InvokeVoidAsync("setTitle", "Ankara Psikolog | Çift Terapisi, Evlilik Danışmanlığı | Meridyen Psikoloji");
+
+            // Improved Meta Description
+            await JS.InvokeVoidAsync("setMetaTag", "description",
+                "Ankara'da uzman psikolog. Çankaya, Yenimahalle, Oran'da çift terapisi, evlilik danışmanlığı, bireysel terapi. Online randevu al. ⭐4.9/5 puan");
+
+            // Enhanced Keywords with LSI
+            await JS.InvokeVoidAsync("setMetaTag", "keywords",
+                "Ankara psikolog, çift terapisi Ankara, evlilik danışmanlığı Çankaya, Yenimahalle psikolog, çocuk psikoloğu Ankara, kaygı tedavisi, depresyon terapisi, online psikolog, Oran terapi merkezi, Çukurambar psikolojik danışmanlık, aile terapisi, bireysel terapi, ilişki danışmanlığı, panik atak tedavisi, stres yönetimi");
+
+            // Open Graph - Enhanced
+            await JS.InvokeVoidAsync("setMetaTag", "og:title",
+                "Ankara'nın En İyi Psikoloji Merkezi | Meridyen Psikoloji");
+            await JS.InvokeVoidAsync("setMetaTag", "og:description",
+                "Çift terapisi, evlilik danışmanlığı ve bireysel terapi. Ankara'da 5 lokasyonda hizmet. 4.9/5 puan ile ⭐⭐⭐⭐⭐");
+            await JS.InvokeVoidAsync("setMetaTag", "og:type", "website");
+            await JS.InvokeVoidAsync("setMetaTag", "og:url", "https://www.meridiyen-psikoloji.com");
+            await JS.InvokeVoidAsync("setMetaTag", "og:image", "https://www.meridiyen-psikoloji.com/assets/img/og-homepage.jpg");
+            await JS.InvokeVoidAsync("setMetaTag", "og:locale", "tr_TR");
+
+            // Twitter Card
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:card", "summary_large_image");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:title", "Ankara Psikolog | Çift Terapisi & Evlilik Danışmanlığı");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:description", "Ankara'da uzman psikolojik danışmanlık. Online randevu al.");
+
+            // Enhanced Local SEO
+            await JS.InvokeVoidAsync("setMetaTag", "geo.region", "TR-06");
+            await JS.InvokeVoidAsync("setMetaTag", "geo.placename", "Ankara, Çankaya, Yenimahalle, Oran");
+            await JS.InvokeVoidAsync("setMetaTag", "geo.position", "39.9334;32.8597");
+
+            // Technical SEO
+            await JS.InvokeVoidAsync("setMetaTag", "robots", "index, follow, max-snippet:-1, max-image-preview:large");
+            await JS.InvokeVoidAsync("setCanonical", "https://www.meridiyen-psikoloji.com/");
+
+            // Enhanced Schema - Multiple types
+            var enhancedSchema = new
+            {
+                context = "https://schema.org",
+                graph = new object[]
+                {
+                    // Local Business Schema
+                    new {
+                        type = new[] { "MedicalOrganization", "LocalBusiness", "HealthAndBeautyBusiness" },
+                        id = "https://www.meridiyen-psikoloji.com/#organization",
+                        name = "Meridyen Psikoloji",
+                        alternateName = "Meridyen Psikoloji Merkezi",
+                        description = "Ankara'da çift terapisi, evlilik danışmanlığı, bireysel terapi hizmeti veren uzman psikoloji merkezi",
+                        url = "https://www.meridiyen-psikoloji.com",
+                        telephone = "+90-312-XXX-XXXX",
+                        email = "info@meridiyen-psikoloji.com",
+                        address = new[] {
+                            new {
+                                type = "PostalAddress",
+                                name = "Çankaya Şubesi",
+                                streetAddress = "Çankaya Merkez",
+                                addressLocality = "Çankaya",
+                                addressRegion = "Ankara",
+                                postalCode = "06680",
+                                addressCountry = "TR"
+                            },
+                            new {
+                                type = "PostalAddress",
+                                name = "Yenimahalle Şubesi",
+                                streetAddress = "Yenimahalle Merkez",
+                                addressLocality = "Yenimahalle",
+                                addressRegion = "Ankara",
+                                postalCode = "06170",
+                                addressCountry = "TR"
+                            }
+                        },
+                        geo = new {
+                            type = "GeoCoordinates",
+                            latitude = "39.9334",
+                            longitude = "32.8597"
+                        },
+                        areaServed = new[] {
+                            new { type = "City", name = "Ankara" },
+                            new { type = "AdministrativeArea", name = "Çankaya" },
+                            new { type = "AdministrativeArea", name = "Yenimahalle" },
+                            new { type = "AdministrativeArea", name = "Oran" },
+                            new { type = "AdministrativeArea", name = "Çukurambar" }
+                        },
+                        openingHours = new[] { "Mo-Fr 09:00-19:00", "Sa 10:00-17:00" },
+                        paymentAccepted = new[] { "Cash", "Credit Card", "Debit Card" },
+                        priceRange = "$$",
+                        aggregateRating = new {
+                            type = "AggregateRating",
+                            ratingValue = "4.9",
+                            reviewCount = "245",
+                            bestRating = "5"
+                        },
+                        hasOfferCatalog = new {
+                            type = "OfferCatalog",
+                            name = "Psikoloji Hizmetleri",
+                            itemListElement = new[] {
+                                new {
+                                    type = "Offer",
+                                    itemOffered = new {
+                                        type = "MedicalService",
+                                        name = "Çift Terapisi",
+                                        description = "Çiftler için profesyonel psikolojik destek ve terapi",
+                                        serviceType = "Çift Terapisi"
+                                    }
+                                },
+                                new {
+                                    type = "Offer",
+                                    itemOffered = new {
+                                        type = "MedicalService",
+                                        name = "Evlilik Danışmanlığı",
+                                        description = "Evlilik öncesi ve sonrası danışmanlık hizmetleri",
+                                        serviceType = "Evlilik Danışmanlığı"
+                                    }
+                                },
+                                new {
+                                    type = "Offer",
+                                    itemOffered = new {
+                                        type = "MedicalService",
+                                        name = "Bireysel Terapi",
+                                        description = "Kişisel gelişim ve psikolojik destek terapisi",
+                                        serviceType = "Bireysel Terapi"
+                                    }
+                                }
+                            }
+                        },
+                        sameAs = new[] {
+                            "https://www.instagram.com/meridyenpsikoloji",
+                            "https://www.linkedin.com/company/meridyenpsikoloji",
+                            "https://www.facebook.com/meridyenpsikoloji"
+                        }
+                    },
+                    // WebPage Schema
+                    new {
+                        type = "WebPage",
+                        id = "https://www.meridiyen-psikoloji.com/#webpage",
+                        url = "https://www.meridiyen-psikoloji.com/",
+                        name = "Ankara Psikolog | Çift Terapisi, Evlilik Danışmanlığı",
+                        description = "Ankara'da uzman psikolojik danışmanlık hizmetleri. Çift terapisi, evlilik danışmanlığı, bireysel terapi.",
+                        isPartOf = new {
+                            id = "https://www.meridiyen-psikoloji.com/#website"
+                        },
+                        about = new {
+                            id = "https://www.meridiyen-psikoloji.com/#organization"
+                        },
+                        mainEntity = new {
+                            id = "https://www.meridiyen-psikoloji.com/#organization"
+                        }
+                    },
+                    // Website Schema
+                    new {
+                        type = "WebSite",
+                        id = "https://www.meridiyen-psikoloji.com/#website",
+                        url = "https://www.meridiyen-psikoloji.com/",
+                        name = "Meridyen Psikoloji",
+                        description = "Ankara'da uzman psikolojik danışmanlık merkezi",
+                        publisher = new {
+                            id = "https://www.meridiyen-psikoloji.com/#organization"
+                        },
+                        potentialAction = new {
+                            type = "SearchAction",
+                            target = new {
+                                type = "EntryPoint",
+                                urlTemplate = "https://www.meridiyen-psikoloji.com/search?q={search_term_string}"
+                            },
+                            queryInput = "required name=search_term_string"
+                        }
+                    },
+                    // Professional Service Schema
+                    new {
+                        type = "ProfessionalService",
+                        id = "https://www.meridiyen-psikoloji.com/#service",
+                        name = "Meridyen Psikoloji Danışmanlık Hizmetleri",
+                        description = "Çift terapisi, evlilik danışmanlığı, bireysel terapi ve aile danışmanlığı",
+                        provider = new {
+                            id = "https://www.meridiyen-psikoloji.com/#organization"
+                        },
+                        areaServed = new {
+                            type = "City",
+                            name = "Ankara"
+                        },
+                        serviceType = new[] {
+                            "Çift Terapisi",
+                            "Evlilik Danışmanlığı",
+                            "Bireysel Terapi",
+                            "Aile Terapisi",
+                            "Online Psikoloji Danışmanlığı"
+                        }
+                    }
+                }
+            };
+
+            var schemaJson = System.Text.Json.JsonSerializer.Serialize(enhancedSchema, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                });
+            await JS.InvokeVoidAsync("addPageSchema", schemaJson);
+        }
+    }
+
+    private List<TestimonialItem> Testimonials = new()
+    {
+        new TestimonialItem
+        {
+            Text = "Uzm. Psk. Dan. Hatice Çağıl Kandemir ile yaptığım terapi seansları hayatımın dönüm noktası oldu. Profesyonel yaklaşımı ve samimi tavırlarıyla kendimi güvende hissettim. Artık hayata daha pozitif bakabiliyorum.",
+            ClientName = "Merve K.",
+            ClientInfo = "Öğretmen • Adana",
+            InitialAvatar = "M.K",
+            Rating = 5
+        },
+        new TestimonialItem
+        {
+            Text = "Panik atak sorunu yaşarken Hatice Hanım'a başvurdum. Kendisinin sabırlı ve anlayışlı yaklaşımı sayesinde bu süreci başarıyla atlattım. Gerçekten işinin ehli bir uzman.",
+            ClientName = "Ahmet Y.",
+            ClientInfo = "Mühendis • Adana",
+            InitialAvatar = "A.Y",
+            Rating = 5
+        },
+        new TestimonialItem
+        {
+            Text = "Çocuğumla yaşadığımız iletişim sorunları konusunda aldığım destek çok değerliydi. Hatice Hanım'ın önerileri sayesinde aile içi ilişkilerimiz çok daha sağlıklı hale geldi.",
+            ClientName = "Elif S.",
+            ClientInfo = "Avukat • Adana",
+            InitialAvatar = "E.S",
+            Rating = 5
+        },
+        new TestimonialItem
+        {
+            Text = "Depresyon sürecimde yanımda olan, beni hiç yargılamayan ve her zaman umut veren bir danışman. Online seanslar da çok rahat ve etkili geçti. Teşekkürler Hatice Hanım.",
+            ClientName = "Can T.",
+            ClientInfo = "Grafik Tasarımcı • Mersin",
+            InitialAvatar = "C.T",
+            Rating = 5
+        },
+        new TestimonialItem
+        {
+            Text = "Sosyal fobi problemimle başa çıkabilmek için aldığım terapi desteği hayat kalitemi inanılmaz artırdı. Artık sosyal ortamlarda kendimi çok daha rahat hissediyorum.",
+            ClientName = "Zeynep A.",
+            ClientInfo = "Hemşire • Adana",
+            InitialAvatar = "Z.A",
+            Rating = 5
+        }
+    };
+
+  
+
+    protected override void OnInitialized()
+    {
+        StartAutoplay();
+       
+    }
+
+ 
+
+  
+
+    private async Task NextSlide()
+    {
+        if (CurrentIndex < Testimonials.Count - 1)
+        {
+            CurrentIndex++;
+        }
+        else
+        {
+            CurrentIndex = 0;
+        }
+        ResetAutoplay();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task PreviousSlide()
+    {
+        if (CurrentIndex > 0)
+        {
+            CurrentIndex--;
+        }
+        else
+        {
+            CurrentIndex = Testimonials.Count - 1;
+        }
+        ResetAutoplay();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GoToSlide(int index)
+    {
+        CurrentIndex = index;
+        ResetAutoplay();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsVisible(TestimonialItem testimonial)
+    {
+        return Testimonials.IndexOf(testimonial) == CurrentIndex;
+    }
+
+    private void StartAutoplay()
+    {
+        if (IsAutoplayActive && AutoplayTimer == null)
+        {
+            _cancellationTokenSource = new CancellationTokenSource();
+            AutoplayTimer = new Timer(AutoplayCallback, null, AutoplayDelay, AutoplayDelay);
+        }
+    }
+
+    private async void AutoplayCallback(object? state)
+    {
+        if (_cancellationTokenSource?.Token.IsCancellationRequested == true)
+            return;
+
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                await NextSlide();
+            });
+        }
+        catch (ObjectDisposedException)
+        {
+            // Component disposed, ignore
+        }
+    }
+
+    private void StopAutoplay()
+    {
+        IsAutoplayActive = false;
+        AutoplayTimer?.Dispose();
+        AutoplayTimer = null;
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
+    }
+
+    private void ResetAutoplay()
+    {
+        StopAutoplay();
+        IsAutoplayActive = true;
+        StartAutoplay();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BlogList = await blogPostService.GetLastPostAsync(1, 3);
+    }
+
+    public void Dispose()
+    {
+        StopAutoplay();
+    }
+}
+

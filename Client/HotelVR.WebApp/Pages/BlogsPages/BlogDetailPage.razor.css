@@ -1,0 +1,177 @@
+﻿
+/*  Ana tasarım iyileştirmeleri */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.bg-gradient-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
+.blog-cover-image {
+    height: 300px;
+    object-fit: cover;
+}
+
+.blog-content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: #2d3748;
+}
+
+    .blog-content h2, .blog-content h3, .blog-content h4 {
+        margin: 2.5rem 0 1.5rem;
+        font-weight: 600;
+        color: #1a202c;
+        scroll-margin-top: 100px;
+    }
+
+    .blog-content h2 {
+        font-size: 1.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.5rem;
+    }
+
+    .blog-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .blog-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin: 2rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .blog-content img:hover {
+            transform: scale(1.02);
+        }
+
+    .blog-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .blog-content blockquote {
+        border-left: 4px solid #4299e1;
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+        background-color: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+/* Sticky sidebar */
+.sticky-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+/* İçindekiler navigasyonu */
+.toc-nav .list-unstyled {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.toc-link {
+    color: #4a5568;
+    text-decoration: none;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+    .toc-link:hover {
+        color: #2b6cb0;
+        background-color: rgba(66, 153, 225, 0.1);
+        border-left-color: #4299e1;
+        text-decoration: none;
+    }
+
+    .toc-link.active {
+        color: #2b6cb0;
+        background-color: rgba(66, 153, 225, 0.15);
+        border-left-color: #4299e1;
+        font-weight: 600;
+    }
+
+/* Recent posts */
+.recent-post-link:hover {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+}
+
+    .recent-post-link:hover .text-dark {
+        color: #2b6cb0 !important;
+    }
+
+/* Author card */
+.author-card {
+    border: 1px solid #e2e8f0;
+    transition: box-shadow 0.3s ease;
+}
+
+    .author-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+/* Breadcrumb iyileştirmeleri */
+.breadcrumb {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+}
+
+.breadcrumb-item a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+}
+
+    .breadcrumb-item a:hover {
+        color: white;
+        text-decoration: underline;
+    }
+
+.breadcrumb-item.active {
+    color: white;
+    font-weight: 500;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: rgba(255,255,255,0.7);
+}
+
+/* Responsive tasarım */
+@media (max-width: 991.98px) {
+    .sticky-sidebar {
+        position: static;
+    }
+
+    .blog-cover-image {
+        height: 200px;
+    }
+
+    .blog-content {
+        font-size: 1rem;
+    }
+}
+
+/* Cursor pointer */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Button hover effects */
+.btn:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+

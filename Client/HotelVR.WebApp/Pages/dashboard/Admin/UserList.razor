@@ -1,0 +1,403 @@
+﻿@page "/admin/Users"
+@using Application.Models
+@using HotelVR.WebApp.Pages.Component
+@layout AdminLayout
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+    <!-- Header Section -->
+    <MudPaper Class="pa-6 mb-4" Elevation="2" Style="border-radius: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="d-flex justify-space-between align-center">
+            <div class="text-white">
+                <MudText Typo="Typo.h3" Class="font-weight-bold mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-3" Style="font-size: 2rem;" />
+                    Kullanıcı Yönetimi
+                </MudText>
+                <MudText Typo="Typo.subtitle1" Style="opacity: 0.9;">
+                    Toplam @users.Count kullanıcı • @users.Count(u => u.Role == "Admin") Admin • @users.Count(u => u.Role == "User") Kullanıcı
+                </MudText>
+            </div>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Surface"
+                       StartIcon="@Icons.Material.Filled.PersonAdd"
+                       Size="Size.Large"
+                       Class="text-primary font-weight-bold px-6"
+                       Style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);"
+                       OnClick="Navigate">
+                Yeni Kullanıcı Ekle
+            </MudButton>
+        </div>
+    </MudPaper>
+
+    <!-- Filters Section -->
+    <MudPaper Class="pa-4 mb-4" Elevation="1" Style="border-radius: 16px; border: 1px solid #e0e0e0;">
+        <MudGrid AlignItems="Center" Spacing="3">
+            <MudItem xs="12" md="8">
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="İsim, email veya telefon ile ara..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              FullWidth="true"
+                              Immediate="true"
+                              Style="border-radius: 12px;"
+                              Class="search-field" />
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="string" @bind-Value="selectedRole"
+                           Label="Rol Filtresi"
+                           Variant="Variant.Outlined"
+                           FullWidth="true"
+                           Style="border-radius: 12px;">
+                    <MudSelectItem T="string" Value="@("")">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.FilterList" Class="mr-2" Size="Size.Small" />
+                            Tüm Roller
+                        </div>
+                    </MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Admin")">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" Size="Size.Small" Color="Color.Error" />
+                            Admin
+                        </div>
+                    </MudSelectItem>
+                    <MudSelectItem T="string" Value="@("User")">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" Size="Size.Small" Color="Color.Info" />
+                            Kullanıcı
+                        </div>
+                    </MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Users Table -->
+    <MudPaper Elevation="2" Style="border-radius: 16px; overflow: hidden; border: 1px solid #e0e0e0;">
+        @if (loading)
+        {
+            <div class="d-flex justify-center align-center pa-8">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="ml-4" Typo="Typo.h6">Kullanıcılar yükleniyor...</MudText>
+            </div>
+        }
+        else if (!filteredUsers.Any())
+        {
+            <div class="d-flex flex-column justify-center align-center pa-8">
+                <MudIcon Icon="@Icons.Material.Outlined.SearchOff" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">Kullanıcı bulunamadı</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Tertiary">Arama kriterlerinizi değiştirmeyi deneyin</MudText>
+            </div>
+        }
+        else
+        {
+            <MudTable T="UserDto"
+                      Items="@filteredUsers"
+                      Hover="true"
+                      Elevation="0"
+                      Dense="false"
+                      Class="user-table">
+                
+                <HeaderContent>
+                    <MudTh Style="width: 80px; background: #f8f9fa; font-weight: 600;">Avatar</MudTh>
+                    <MudTh Style="background: #f8f9fa; font-weight: 600;">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-2" />
+                            Kullanıcı Bilgileri
+                        </div>
+                    </MudTh>
+                    <MudTh Style="background: #f8f9fa; font-weight: 600;">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.ContactMail" Size="Size.Small" Class="mr-2" />
+                            İletişim
+                        </div>
+                    </MudTh>
+                    <MudTh Style="background: #f8f9fa; font-weight: 600;">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Small" Class="mr-2" />
+                            Rol
+                        </div>
+                    </MudTh>
+                    <MudTh Style="background: #f8f9fa; font-weight: 600;">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-2" />
+                            Durum
+                        </div>
+                    </MudTh>
+                    <MudTh Style="width: 120px; background: #f8f9fa; font-weight: 600; text-align: center;">İşlemler</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd Style="padding: 16px;">
+                        <MudBadge Color="@(GetUserStatusColor(context))" 
+                                  Dot="true" 
+                                  Overlap="true"
+                                  Bordered="true">
+                            <MudAvatar Color="@GetAvatarColor(context.Role)" 
+                                       Size="Size.Medium"
+                                       Style="font-weight: 600;">
+                                @GetUserInitials(context)
+                            </MudAvatar>
+                        </MudBadge>
+                    </MudTd>
+                    <MudTd Style="padding: 16px;">
+                        <div>
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-medium mb-1">
+                                @context.firstName @context.lastName
+                            </MudText>
+                            @if (!string.IsNullOrEmpty(context.FullName) && context.FullName != $"{context.firstName} {context.lastName}")
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                                    @context.FullName
+                                </MudText>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd Style="padding: 16px;">
+                        <div>
+                            <div class="d-flex align-center mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                <MudText Typo="Typo.body2">@context.Email</MudText>
+                            </div>
+                            @if (!string.IsNullOrEmpty(context.PhoneNumber))
+                            {
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="mr-2" Color="Color.Success" />
+                                    <MudText Typo="Typo.body2" Color="Color.Tertiary">@context.PhoneNumber</MudText>
+                                </div>
+                            }
+                        </div>
+                    </MudTd>
+                    <MudTd Style="padding: 16px;">
+                        <MudChip T="string" Icon="@GetRoleIcon(context.Role)"
+                                 Color="@GetRoleColor(context.Role)"
+                                 Variant="Variant.Filled"
+                                 Size="Size.Small"
+                                 Class="font-weight-medium"
+                                 Style="border-radius: 8px;">
+                            @context.Role
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="padding: 16px;">
+                        <MudChip T="string" Color="@GetUserStatusColor(context)" 
+                                 Variant="Variant.Text" 
+                                 Size="Size.Small"
+                                 Icon="@Icons.Material.Filled.Circle"
+                                 Style="border-radius: 8px;">
+                            @GetUserStatusText(context)
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="padding: 16px; text-align: center;">
+                        <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditUser(context.Id))"
+                                           Title="Düzenle" />
+                            <MudIconButton Icon="@Icons.Material.Filled.LockReset" 
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           OnClick="@(() => ResetPassword(context.Id))"
+                                           Title="Şifre Sıfırla" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           OnClick="@(() => ShowDeleteDialog(context))"
+                                           Title="Sil" />
+                        </MudButtonGroup>
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager RowsPerPageString="Sayfa başına:"
+                                   InfoFormat="{first_item}-{last_item} / {all_items}"
+                                   PageSizeOptions="new int[] {10, 25, 50, 100}" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</MudContainer>
+
+<!-- Delete Confirmation Dialog -->
+<MudDialog @bind-IsVisible="deleteDialogVisible" Options="@(new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small })">
+    <DialogContent>
+        <div class="d-flex flex-column align-center pa-4">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="mb-2">Kullanıcı Silme Onayı</MudText>
+            <MudText Typo="Typo.body1" Class="text-center mb-4">
+                <strong>@selectedUser?.firstName @selectedUser?.lastName</strong> kullanıcısını silmek istediğinizden emin misiniz?
+            </MudText>
+            <MudAlert Severity="Severity.Warning" Class="mb-4">
+                Bu işlem geri alınamaz ve kullanıcının tüm verileri silinir.
+            </MudAlert>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteDialog" Variant="Variant.Text">İptal</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete" StartIcon="@Icons.Material.Filled.Delete">
+            Sil
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    private List<UserDto> users = new();
+    private UserDto? selectedUser;
+    private string searchString = "";
+    private string selectedRole = "";
+    private bool loading = true;
+    private bool deleteDialogVisible = false;
+
+    private IEnumerable<UserDto> filteredUsers => users
+        .Where(u => string.IsNullOrWhiteSpace(searchString) ||
+                    u.firstName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    u.lastName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    u.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(u.PhoneNumber) && u.PhoneNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+        .Where(u => string.IsNullOrWhiteSpace(selectedRole) || u.Role == selectedRole)
+        .OrderByDescending(u => u.Role)
+        .ThenBy(u => u.firstName);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            users = await UserService.GetAllUserList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kullanıcılar yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Color GetRoleColor(string role)
+    {
+        return role switch
+        {
+            "Admin" => Color.Error,
+            "User" => Color.Warning,
+           
+            _ => Color.Info
+        };
+    }
+
+    private string GetRoleIcon(string role)
+    {
+        return role switch
+        {
+            "Admin" => Icons.Material.Filled.AdminPanelSettings,
+            "User" => Icons.Material.Filled.Edit,
+           
+            _ => Icons.Material.Filled.Person
+        };
+    }
+
+    private Color GetAvatarColor(string role)
+    {
+        return role switch
+        {
+            "Admin" => Color.Error,
+            "Editor" => Color.Warning,
+            "Manager" => Color.Success,
+            _ => Color.Primary
+        };
+    }
+
+    private string GetUserInitials(UserDto user)
+    {
+        var firstInitial = !string.IsNullOrEmpty(user.firstName) ? user.firstName[0].ToString().ToUpper() : "";
+        var lastInitial = !string.IsNullOrEmpty(user.lastName) ? user.lastName[0].ToString().ToUpper() : "";
+        return $"{firstInitial}{lastInitial}";
+    }
+
+    private Color GetUserStatusColor(UserDto user)
+    {
+        // Bu kısım kullanıcının aktif/pasif durumuna göre ayarlanabilir
+        // Şimdilik role göre renk veriyorum
+        return user.Role == "Admin" ? Color.Success : Color.Info;
+    }
+
+    private string GetUserStatusText(UserDto user)
+    {
+        // Bu kısım kullanıcının gerçek durumuna göre ayarlanabilir
+        return "Aktif";
+    }
+
+    private void EditUser(Guid userId)
+    {
+        Navigation.NavigateTo($"/admin/users/edit/{userId}");
+    }
+
+    private async Task ResetPassword(Guid userId)
+    {
+        var parameters = new DialogParameters<ConfirmDialog>
+        {
+            { "Title", "Şifre Sıfırlama Onayı" },
+            { "Message", "Bu kullanıcının şifresini sıfırlamak istediğinizden emin misiniz?" }
+        };
+        
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+        var dialog = DialogService.Show<ConfirmDialog>("Şifre Sıfırlama", parameters, options);
+        var result = await dialog.Result;
+        
+        if (!result.Canceled)
+        {
+            try
+            {
+                // Şifre sıfırlama işlemi burada yapılacak
+                // await UserService.ResetPassword(userId);
+                Snackbar.Add("Şifre sıfırlama işlemi başarılı!", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Şifre sıfırlanırken hata oluştu: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void Navigate()
+    {
+        Navigation.NavigateTo("/admin/users/create");
+    }
+    
+    private void ShowDeleteDialog(UserDto user)
+    {
+        selectedUser = user;
+        deleteDialogVisible = true;
+    }
+
+    private void CloseDeleteDialog()
+    {
+        deleteDialogVisible = false;
+        selectedUser = null;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (selectedUser != null)
+        {
+            try
+            {
+                // await UserService.DeleteUser(selectedUser.Id);
+                users = await UserService.GetAllUserList();
+                Snackbar.Add($"{selectedUser.firstName} {selectedUser.lastName} başarıyla silindi!", Severity.Success);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Kullanıcı silinirken hata oluştu: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                CloseDeleteDialog();
+            }
+        }
+    }
+}

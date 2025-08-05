@@ -1,0 +1,394 @@
+﻿/* CSS Variables - Performans ve Bakım Kolaylığı */
+:root {
+    --primary-color: #14b8a6;
+    --primary-dark: #0f766e;
+    --secondary-color: #4f46e5;
+    --secondary-dark: #3730a3;
+    --text-primary: #1f2937;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --text-light: #d1d5db;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --border-color: #e5e7eb;
+    --border-light: #f3f4f6;
+    --shadow-sm: 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+    --transition-fast: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --border-radius: 12px;
+    --border-radius-lg: 20px;
+}
+
+/* Base Styles - Gereksiz !important kaldırıldı */
+.card {
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    will-change: transform, box-shadow;
+}
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+
+.text-primary {
+    color: var(--text-primary);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: all var(--transition-fast);
+    will-change: transform, box-shadow;
+}
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
+    }
+
+/* Testimonials Section - Optimized */
+.testimonials-section {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Simplified background pattern - Better performance */
+    .testimonials-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+        background-size: 20px 20px;
+        pointer-events: none;
+    }
+
+.testimonials-container {
+    position: relative;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+/* Slider - GPU acceleration */
+.testimonials-wrapper {
+    display: flex;
+    transition: transform var(--transition-smooth);
+    will-change: transform;
+}
+
+/* Optimized slide transforms */
+.slide-0 {
+    transform: translate3d(0%, 0, 0);
+}
+
+.slide-1 {
+    transform: translate3d(-100%, 0, 0);
+}
+
+.slide-2 {
+    transform: translate3d(-200%, 0, 0);
+}
+
+.slide-3 {
+    transform: translate3d(-300%, 0, 0);
+}
+
+.slide-4 {
+    transform: translate3d(-400%, 0, 0);
+}
+
+.slide-5 {
+    transform: translate3d(-500%, 0, 0);
+}
+
+/* Testimonial Card - Simplified */
+.testimonial-card {
+    min-width: 100%;
+    background: var(--bg-primary);
+    padding: 80px 60px;
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+    .testimonial-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(135deg, var(--secondary-color), #7c3aed);
+        border-radius: 0 0 2px 2px;
+        transition: width var(--transition-fast);
+    }
+
+/* Icons and Elements */
+.quote-icon {
+    font-size: 3rem;
+    color: var(--secondary-color);
+    margin-bottom: 30px;
+    opacity: 0.2;
+    font-weight: 900;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+/* Testimonial Text - Simplified pseudo elements */
+.testimonial-text {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 50px;
+    font-weight: 500;
+    max-width: 800px;
+    position: relative;
+    font-style: italic;
+}
+
+    .testimonial-text::before,
+    .testimonial-text::after {
+        content: '"';
+        font-size: 4rem;
+        color: var(--border-color);
+        font-family: Georgia, serif;
+        position: absolute;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .testimonial-text::before {
+        top: -20px;
+        left: -40px;
+    }
+
+    .testimonial-text::after {
+        bottom: -60px;
+        right: -40px;
+    }
+
+/* Client Info */
+.client-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.client-avatar {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--secondary-color), #7c3aed);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+}
+
+.client-details h4 {
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.client-details p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Navigation - Simplified hover states */
+.navigation {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 40px 0;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-light);
+}
+
+.nav-btn {
+    width: 50px;
+    height: 50px;
+    border: 2px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    will-change: transform, background-color;
+}
+
+    .nav-btn:hover:not(:disabled) {
+        background: var(--primary-color);
+        color: var(--bg-primary);
+        border-color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .nav-btn:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    .nav-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background: #f9fafb;
+        color: var(--text-light);
+        border-color: var(--border-light);
+    }
+
+/* Indicators */
+.indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 0 40px;
+    background: var(--bg-primary);
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+    will-change: transform;
+}
+
+    .indicator:hover {
+        transform: scale(1.2);
+    }
+
+    .indicator.active {
+        transform: scale(1.4);
+    }
+
+/* Responsive Design - Consolidated */
+@media (max-width: 1024px) {
+    .testimonial-text {
+        font-size: 1.25rem;
+    }
+
+    .testimonial-card {
+        padding: 60px 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .testimonials-section {
+        padding: 60px 0;
+    }
+
+    .testimonial-card {
+        padding: 50px 30px;
+    }
+
+    .testimonial-text {
+        font-size: 1.125rem;
+        margin-bottom: 40px;
+    }
+
+        .testimonial-text::before,
+        .testimonial-text::after {
+            display: none;
+        }
+
+    .client-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .client-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+
+    .nav-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonials-section {
+        padding: 50px 0;
+    }
+
+    .testimonial-card {
+        padding: 40px 20px;
+    }
+
+    .testimonial-text {
+        font-size: 1rem;
+    }
+
+    .navigation {
+        gap: 10px;
+        padding: 30px 0;
+    }
+
+    .indicators {
+        gap: 6px;
+        padding: 0 0 30px;
+    }
+}
+
+/* Animations - Optimized */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 30px, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Hover Effects - Simplified */
+.testimonials-container:hover .testimonial-card::before {
+    width: 80px;
+}

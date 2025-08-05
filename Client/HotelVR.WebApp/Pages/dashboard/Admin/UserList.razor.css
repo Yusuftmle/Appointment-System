@@ -1,0 +1,26 @@
+﻿
+.search-field .mud-input-outlined .mud-input-outlined-outlined {
+    border-radius: 12px !important;
+}
+
+.user-table .mud-table-row:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.user-table .mud-table-cell {
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.mud-button-group .mud-icon-button {
+    border-radius: 8px !important;
+    margin: 0 2px;
+}
+
+    .mud-button-group .mud-icon-button:hover {
+        transform: scale(1.1);
+        transition: transform 0.2s ease;
+    }
+

@@ -1,0 +1,437 @@
+﻿@page "/profile"
+@inject IUserService UserService
+@inject IidentityService IdentityService
+@inject NavigationManager Navigation
+@inject IAppointmentService AppointmentService
+@inject IJSRuntime JSRuntime
+
+@layout MainLayout
+@using Application.Models
+@using Application.RequestModels.User.PasswordComment
+@using Application.RequestModels.User.UpdateUser
+@inject HttpClient Http
+
+<!-- Notification Toast -->
+@if (!string.IsNullOrEmpty(notificationMessage))
+{
+    <div class="toast-container">
+        <div class="toast @(isSuccess ? "toast-success" : "toast-error")">
+            <div class="toast-icon">
+                @if (isSuccess)
+                {
+                    <i class="fas fa-check-circle"></i>
+                }
+                else
+                {
+                    <i class="fas fa-exclamation-circle"></i>
+                }
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">@(isSuccess ? "Success" : "Error")</div>
+                <div class="toast-message">@notificationMessage</div>
+            </div>
+            <button class="toast-close" @onclick="CloseNotification">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+}
+
+<!-- Loading Overlay -->
+@if (isLoading)
+{
+    <div class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>@loadingMessage</p>
+        </div>
+    </div>
+}
+
+<div class="profile-container">
+    <!-- Header Section -->
+    <div class="profile-header">
+        <div class="avatar-container">
+            <img src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="Profile" class="avatar" />
+            <button class="avatar-edit" @onclick="() => avatarEditMode = !avatarEditMode" title="Change Avatar">
+                <i class="fas fa-camera"></i>
+            </button>
+            
+            @if (avatarEditMode)
+            {
+                <div class="avatar-options">
+                    <button class="avatar-option" @onclick="UploadAvatar">
+                        <i class="fas fa-upload"></i>
+                        Upload Photo
+                    </button>
+                    <button class="avatar-option" @onclick="RemoveAvatar">
+                        <i class="fas fa-trash"></i>
+                        Remove Photo
+                    </button>
+                </div>
+            }
+        </div>
+        <h1>@user?.FullName</h1>
+        <p class="text-muted">@user?.Email</p>
+        <div class="profile-stats">
+            <div class="stat-item">
+                <i class="fas fa-user-check"></i>
+                <span>Active Member</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs - Bu kısım eksikti -->
+    <div class="profile-nav">
+        <button class="@(activeTab == "profile" ? "active" : "")" @onclick="@(() => SetActiveTab("profile"))">
+            <i class="fas fa-user"></i>
+            Profile Information
+        </button>
+
+        <button class="@(activeTab == "password" ? "active" : "")" @onclick="@(() => SetActiveTab("password"))">
+            <i class="fas fa-lock"></i>
+            Change Password
+        </button>
+
+        <button class="@(activeTab == "appointments" ? "active" : "")" @onclick="@(() => SetActiveTab("appointments"))">
+            <i class="fas fa-calendar-alt"></i>
+            My Appointments
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-content">
+        <!-- Profile Tab -->
+        @if (activeTab == "profile")
+        {
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-user-edit"></i> Personal Information</h3>
+                    <p class="text-muted">Update your personal details and contact information</p>
+                </div>
+
+                <!-- Profile Tab kısmındaki EditForm'u şöyle güncelleyin -->
+                <EditForm Model="model" OnValidSubmit="UpdateProfile">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> First Name</label>
+                            <InputText class="@($"form-control {(HasValidationError("FirstName") ? "is-invalid" : "")}")"
+                                       @bind-Value="model.FirstName"
+                                       placeholder="Enter your first name" />
+                            <ValidationMessage For="@(() => model.FirstName)" class="invalid-feedback" />
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Last Name</label>
+                            <InputText class="@($"form-control {(HasValidationError("LastName") ? "is-invalid" : "")}")"
+                                       @bind-Value="model.LastName"
+                                       placeholder="Enter your last name" />
+                            <ValidationMessage For="@(() => model.LastName)" class="invalid-feedback" />
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-envelope"></i> Email Address</label>
+                            <InputText class="@($"form-control {(HasValidationError("EmailAddress") ? "is-invalid" : "")}")"
+                                       @bind-Value="model.EmailAddress"
+                                       placeholder="Enter your email address" />
+                            <ValidationMessage For="@(() => model.EmailAddress)" class="invalid-feedback" />
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label><i class="fas fa-phone"></i> Phone Number</label>
+                            <InputText class="@($"form-control {(HasValidationError("PhoneNumber") ? "is-invalid" : "")}")"
+                                       @bind-Value="model.PhoneNumber"
+                                       placeholder="Enter your phone number" />
+                            <ValidationMessage For="@(() => model.PhoneNumber)" class="invalid-feedback" />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            <i class="fas fa-save"></i>
+                            @(isLoading ? "Saving..." : "Save Changes")
+                        </button>
+                        <button type="button" class="btn btn-secondary" @onclick="ResetForm" disabled="@isLoading">
+                            <i class="fas fa-undo"></i>
+                            Reset
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+
+        <!-- Change Password Tab -->
+        @if (activeTab == "password")
+        {
+            <div class="profile-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
+                    <p class="text-muted">Change your password to keep your account secure</p>
+                </div>
+                
+                <EditForm Model="changePasswordModel" OnValidSubmit="ChangePassword">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Current Password</label>
+                        <div class="password-input">
+                            <InputText type="@(showCurrentPassword ? "text" : "password")"
+                                       class="@($"form-control {(HasValidationError("oldPassword") ? "is-invalid" : "")}")"
+                                       @bind-Value="changePasswordModel.oldPassword"
+                                       placeholder="Enter your current password" />
+                            <button type="button" class="password-toggle" @onclick="() => showCurrentPassword = !showCurrentPassword">
+                                <i class="fas @(showCurrentPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => changePasswordModel.oldPassword)" class="invalid-feedback" />
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> New Password</label>
+                        <div class="password-input">
+                            <InputText type="@(showNewPassword ? "text" : "password")"
+                                       class="@($"form-control {(HasValidationError("newPassword") ? "is-invalid" : "")}")"
+                                       @bind-Value="changePasswordModel.newPassword"
+                                       placeholder="Enter your new password" />
+                            <button type="button" class="password-toggle" @onclick="() => showNewPassword = !showNewPassword">
+                                <i class="fas @(showNewPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                            </button>
+                        </div>
+                        <ValidationMessage For="@(() => changePasswordModel.newPassword)" class="invalid-feedback" />
+                        <div class="password-strength">
+                            <div class="strength-bar @GetPasswordStrengthClass()"></div>
+                            <span class="strength-text">@GetPasswordStrengthText()</span>
+                        </div>
+                    </div>
+
+                    <div class="security-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>After changing your password, you will be logged out and need to sign in again.</span>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-warning" disabled="@isLoading">
+                            <i class="fas fa-key"></i>
+                            @(isLoading ? "Changing..." : "Change Password")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+
+      
+            
+        
+    </div>
+</div>
+
+@code {
+    private UserDto? user;
+    private UpdateUserCommand model = new();
+    private ChangePasswordCommand changePasswordModel = new();
+    private string activeTab = "profile";
+    private bool avatarEditMode = false;
+    private bool showCurrentPassword = false;
+    private bool showNewPassword = false;
+    private bool isLoading = false;
+    private bool isLoadingAppointments = false;
+    private string loadingMessage = "";
+    private string notificationMessage = "";
+    private bool isSuccess = false;
+    private IEnumerable<AppointmentDto>? appointments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        try
+        {
+            user = await UserService.GetMyProfileAsync();
+
+            if (user != null)
+            {
+                model.Id = user.Id;
+                model.FirstName = user.firstName;
+                model.LastName = user.lastName;
+                model.UserName = user.FullName;
+                model.EmailAddress = user.Email;
+                model.PhoneNumber = user.PhoneNumber;
+                changePasswordModel.UserId = user.Id;
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowNotification("An error occurred while loading profile", false);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+  
+
+    private async Task ChangePassword()
+    {
+        isLoading = true;
+        loadingMessage = "Changing password...";
+        
+        try
+        {
+            bool success = await UserService.ChangePasswordAsync(changePasswordModel);
+            if (success)
+            {
+                ShowNotification("Password changed successfully! You will be logged out.", true);
+                await Task.Delay(2000);
+                IdentityService.Logout();
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                ShowNotification("Failed to change password. Please check your current password.", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowNotification("An error occurred while changing password", false);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        
+       
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        if (user != null)
+        {
+            model.FirstName = user.firstName;
+            model.LastName = user.lastName;
+            model.UserName = user.FullName;
+            model.EmailAddress = user.Email;
+            model.PhoneNumber = user.PhoneNumber;
+        }
+        StateHasChanged();
+    }
+
+    private void ShowNotification(string message, bool success)
+    {
+        notificationMessage = message;
+        isSuccess = success;
+        StateHasChanged();
+        
+        _ = Task.Delay(5000).ContinueWith(_ => 
+        {
+            InvokeAsync(() => 
+            {
+                notificationMessage = "";
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void CloseNotification()
+    {
+        notificationMessage = "";
+        StateHasChanged();
+    }
+
+    private bool HasValidationError(string fieldName)
+    {
+        return false;
+    }
+
+    private string GetPasswordStrengthClass()
+    {
+        if (string.IsNullOrEmpty(changePasswordModel.newPassword))
+            return "";
+            
+        var password = changePasswordModel.newPassword;
+        var score = 0;
+        
+        if (password.Length >= 8) score++;
+        if (password.Any(char.IsUpper)) score++;
+        if (password.Any(char.IsLower)) score++;
+        if (password.Any(char.IsDigit)) score++;
+        if (password.Any(ch => !char.IsLetterOrDigit(ch))) score++;
+        
+        return score switch
+        {
+            <= 2 => "weak",
+            <= 3 => "medium",
+            _ => "strong"
+        };
+    }
+
+    private string GetPasswordStrengthText()
+    {
+        if (string.IsNullOrEmpty(changePasswordModel.newPassword))
+            return "Enter a password";
+            
+        return GetPasswordStrengthClass() switch
+        {
+            "weak" => "Weak password",
+            "medium" => "Medium strength",
+            "strong" => "Strong password",
+            _ => ""
+        };
+    }
+
+    private async Task UploadAvatar()
+    {
+        ShowNotification("Avatar upload feature will be implemented soon", true);
+        avatarEditMode = false;
+    }
+
+    private async Task RemoveAvatar()
+    {
+        ShowNotification("Avatar removed successfully", true);
+        avatarEditMode = false;
+    }
+
+    private async Task UpdateProfile()
+    {
+        isLoading = true;
+        loadingMessage = "Updating profile...";
+        
+        try
+        {
+            bool success = await UserService.UpdateProfileAsync(model);
+            if (success)
+            {
+                ShowNotification("Profile updated successfully!", true);
+                await LoadUserProfile();
+            }
+            else
+            {
+                ShowNotification("Failed to update profile. Please try again.", false);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowNotification("An error occurred while updating profile", false);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

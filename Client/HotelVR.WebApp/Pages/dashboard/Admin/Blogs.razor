@@ -1,0 +1,817 @@
+﻿@page "/admin/blogs"
+@using Application.Models
+@using Application.Models.Page
+@using Application.RequestModels.BlogTag.Create
+@using Application.RequestModels.BlogTag.Update
+@using HotelVR.WebApp.Pages.Component
+@layout AdminLayout
+@inject IBlogPostService BlogService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Blog Yönetimi - Admin Panel</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
+    <!-- Header Section -->
+    <MudPaper Class="pa-6 mb-6" Elevation="2" Style="border-radius: 20px; background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);">
+        <div class="d-flex justify-space-between align-center">
+            <div>
+                <MudText Typo="Typo.h3" Class="text-white font-weight-bold mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Article" Class="mr-3" />
+                    Blog Yönetim Paneli
+                </MudText>
+                <div class="d-flex align-center">
+                    <MudChip T="string"
+                             Color="Color.Surface"
+                             Variant="Variant.Filled"
+                             Size="Size.Medium"
+                             Class="mr-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Size="Size.Small" Class="mr-1" />
+                        Toplam: @_blogs.Count
+                    </MudChip>
+                    <MudChip T="string"
+                             Color="Color.Success"
+                             Variant="Variant.Filled"
+                             Size="Size.Medium"
+                             Class="mr-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Class="mr-1" />
+                        Yayında: @_blogs.Count(b => b.IsPublished)
+                    </MudChip>
+                    <MudChip T="string"
+                             Color="Color.Warning"
+                             Variant="Variant.Filled"
+                             Size="Size.Medium">
+                        <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="mr-1" />
+                        Taslak: @_blogs.Count(b => !b.IsPublished)
+                    </MudChip>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Surface"
+                           StartIcon="@Icons.Material.Filled.Category"
+                           Size="Size.Large"
+                           Class="px-6 py-3"
+                           Style="border-radius: 12px; font-weight: 600; text-transform: none;"
+                           OnClick="@(() => _showBlogTagDrawer = true)">
+                    Kategori Yönetimi
+                </MudButton>
+                
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Surface"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Large"
+                           Class="px-6 py-3"
+                           Style="border-radius: 12px; font-weight: 600; text-transform: none;"
+                           OnClick="CreateNewBlog">
+                    Yeni Blog Oluştur
+                </MudButton>
+            </div>
+        </div>
+    </MudPaper>
+    
+    <!-- Kategori Yönetimi Drawer -->
+    <MudDrawer @bind-Open="_showBlogTagDrawer" 
+               Anchor="Anchor.Right" 
+               Elevation="1" 
+               Variant="@DrawerVariant.Temporary" 
+               Width="450px"
+               CloseOnEscape="true"
+               OnClose="@(() => _showBlogTagDrawer = false)">
+        <MudDrawerHeader Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);">
+            <div class="d-flex align-center justify-space-between w-100">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-2 text-white" />
+                    <MudText Typo="Typo.h6" Class="text-white font-weight-bold">Kategori Yönetimi</MudText>
+                </div>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                               Color="Color.Inherit" 
+                               Class="text-white"
+                               OnClick="@(() => _showBlogTagDrawer = false)" />
+            </div>
+        </MudDrawerHeader>
+        <MudDrawerContent>
+            <MudPaper Elevation="0" Class="pa-4">
+                <!-- Yeni Kategori Ekleme Formu -->
+                <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" Class="mr-2" />
+                    Yeni Kategori Ekle
+                </MudText>
+                
+                <MudTextField @bind-Value="_newBlogTagName" 
+                              Label="Kategori Adı" 
+                              Variant="Variant.Outlined" 
+                              Class="mb-3"
+                              HelperText="Kategori adını giriniz"
+                              Required="true"
+                              RequiredError="Kategori adı gereklidir" />
+                
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           OnClick="AddBlogTag"
+                           Disabled="@(string.IsNullOrWhiteSpace(_newBlogTagName) || _isServiceProcessing)"
+                           Class="mb-4"
+                           Style="border-radius: 8px;">
+                    @if (_isServiceProcessing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Ekleniyor...</MudText>
+                    }
+                    else
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
+                        <MudText>Kategori Ekle</MudText>
+                    }
+                </MudButton>
+
+                <MudDivider Class="my-4" />
+
+                @* Mevcut kategoriler listesi bölümünü güncelleyelim *@
+                <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">
+                    <MudIcon Icon="@Icons.Material.Filled.List" Size="Size.Small" Class="mr-2" />
+                    Mevcut Kategoriler (@categories.Count)
+                </MudText>
+
+                @if (categories.Any())
+                {
+                    <MudPaper Elevation="0" Style="max-height: 400px; overflow-y: auto;">
+                        <MudList T="BlogTagDto" Clickable="false">
+                            @foreach (var category in categories)
+                            {
+                                <MudListItem T="BlogTagDto" Class="pa-3">
+                                    <div class="d-flex justify-space-between align-center w-100">
+                                        <div class="d-flex align-center">
+                                            <MudAvatar Size="Size.Small" Color="@GetCategoryColor(category.Name)" Class="mr-3">
+                                                <MudIcon Icon="@GetCategoryIcon(category.Name)" Size="Size.Small" />
+                                            </MudAvatar>
+                                            <div>
+                                                @if (_editingCategoryId == category.Id)
+                                                {
+                                                    <!-- Düzenleme modu -->
+                                                    <MudTextField @bind-Value="_editingCategoryName"
+                                                                  Variant="Variant.Outlined"
+                                                                  Margin="Margin.Dense"
+                                                                  Style="width: 200px;"
+                                                                  OnKeyDown="@((e) => HandleEditKeyPress(e, category.Id))"
+                                                                  Immediate="true" />
+                                                }
+                                                else
+                                                {
+                                                    <!-- Normal görünüm -->
+                                                    <MudText Typo="Typo.body1" Style="font-weight: 500;">@category.Name</MudText>
+                                                    <MudText Typo="Typo.body2" Class="text-muted">
+                                                        @_blogs.Count(b => b.BlogTagName == category.Name) blog
+                                                    </MudText>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-center">
+                                            @if (_editingCategoryId == category.Id)
+                                            {
+                                                <!-- Düzenleme modunda kaydet/iptal butonları -->
+                                                <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                                               Color="Color.Success"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => SaveCategoryEdit(category.Id))"
+                                                               Disabled="@(_isServiceProcessing || string.IsNullOrWhiteSpace(_editingCategoryName))"
+                                                               Class="mr-1">
+                                                </MudIconButton>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                               Color="Color.Default"
+                                                               Size="Size.Small"
+                                                               OnClick="CancelCategoryEdit"
+                                                               Class="mr-2">
+                                                </MudIconButton>
+                                            }
+                                            else
+                                            {
+                                                <!-- Normal modda düzenle butonu -->
+                                                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                               Color="Color.Primary"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => StartCategoryEdit(category.Id, category.Name))"
+                                                               Class="mr-1">
+                                                </MudIconButton>
+                                            }
+
+                                            <!-- Sil butonu - düzenleme modunda gizle -->
+                                            @if (_editingCategoryId != category.Id)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Color="Color.Error"
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => DeleteBlogTag(category.Id))"
+                                                               Disabled="@(_blogs.Any(b => b.BlogTagName == category.Name))">
+                                                </MudIconButton>
+                                            }
+                                        </div>
+                                    </div>
+                                </MudListItem>
+                                @if (category != categories.Last())
+                                {
+                                    <MudDivider />
+                                }
+                            }
+                        </MudList>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Class="mb-3">
+                        <div class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                            Henüz hiç kategori eklenmemiş.
+                        </div>
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudDrawerContent>
+    </MudDrawer>
+
+    <!-- Filters and Search Section -->
+    <MudPaper Class="pa-4 mb-6" Elevation="1" Style="border-radius: 16px;">
+        <MudGrid AlignItems="Center" Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Blog başlığı, yazar veya içerik ara..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Immediate="true"
+                              Class="full-width"
+                              Style="border-radius: 12px;" />
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudSelect T="string"
+                           @bind-Value="selectedCategory"
+                           Label="Kategori"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Style="border-radius: 12px;">
+                    <MudSelectItem T="string" Value="@string.Empty">Tüm Kategoriler</MudSelectItem>
+                    @foreach (var category in categories)
+                    {
+                        <MudSelectItem Value="@category.Name">
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@GetCategoryIcon(category.Name)" Size="Size.Small" Class="mr-2" />
+                                @category.Name
+                            </div>
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="3">
+                <MudSelect T="string"
+                           @bind-Value="statusFilter"
+                           Label="Durum"
+                           Variant="Variant.Outlined"
+                           Style="border-radius: 12px;">
+                    <MudSelectItem T="string" Value="@string.Empty">Tüm Durumlar</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("published")">Yayında</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("draft")">Taslak</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        @if (HasActiveFilters)
+        {
+            <MudDivider Class="my-3" />
+            <div class="d-flex align-center justify-space-between">
+                <MudText Typo="Typo.body2" Color="Color.Tertiary">
+                    @filteredBlogs.Count() sonuç gösteriliyor
+                </MudText>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Clear"
+                           OnClick="ClearFilters"
+                           Style="text-transform: none;">
+                    Filtreleri Temizle
+                </MudButton>
+            </div>
+        }
+    </MudPaper>
+
+    <!-- Loading State -->
+    @if (isLoading)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="1" Style="border-radius: 16px;">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Class="mt-4">Bloglar yükleniyor...</MudText>
+        </MudPaper>
+    }
+    else if (!filteredBlogs.Any())
+    {
+        <!-- Empty State -->
+        <MudPaper Class="pa-8 text-center" Elevation="1" Style="border-radius: 16px;">
+            <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Tertiary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="mb-2">
+                @(HasActiveFilters ? "Arama kriterlerinize uygun blog bulunamadı" : "Henüz blog yazısı bulunmamaktadır")
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Tertiary" Class="mb-4">
+                @(HasActiveFilters ? "Farklı filtreler deneyebilir veya yeni blog oluşturabilirsiniz." : "İlk blog yazınızı oluşturmak için aşağıdaki butona tıklayın.")
+            </MudText>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateNewBlog"
+                       Style="text-transform: none;">
+                Yeni Blog Oluştur
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Blog Cards Grid -->
+        <MudGrid Spacing="4">
+            @foreach (var blog in pagedBlogs)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Class="blog-card"
+                             Style="border-radius: 16px; transition: all 0.3s ease; cursor: pointer; height: 100%;"
+                             Elevation="2">
+
+                        <!-- Card Header -->
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <MudAvatar Size="Size.Medium" Color="@GetCategoryColor(blog.BlogTagName)">
+                                    <MudIcon Icon="@GetCategoryIcon(blog.BlogTagName)" />
+                                </MudAvatar>
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.body1" Class="font-weight-bold">@blog.Author</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Tertiary">@blog.CreatedAt.ToString("dd MMMM yyyy")</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudMenu>
+                                    <ActivatorContent>
+                                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert"
+                                                       Size="Size.Small"
+                                                       Color="Color.Inherit" />
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem OnClick="@(() => EditBlog(blog))"
+                                                     Icon="@Icons.Material.Filled.Edit">
+                                            Düzenle
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => TogglePublishStatus(blog))"
+                                                     Icon="@(blog.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)">
+                                            @(blog.IsPublished ? "Yayından Kaldır" : "Yayınla")
+                                        </MudMenuItem>
+                                        <MudDivider />
+                                        <MudMenuItem OnClick="@(() => DeleteBlog(blog))"
+                                                     Icon="@Icons.Material.Filled.Delete"
+                                                     Class="text-error">
+                                            Sil
+                                        </MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+
+                        <!-- Card Content -->
+                        <MudCardContent Class="py-2">
+                            <MudText Typo="Typo.h6" Class="mb-2 font-weight-bold" Style="line-height: 1.3;">
+                                @blog.Title
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mb-3" Style="font-family: 'JetBrains Mono', monospace;">
+                                /@blog.Slug
+                            </MudText>
+
+                            <div class="d-flex align-center justify-space-between">
+                                <MudChip T="string"
+                                         Color="@GetCategoryColor(blog.BlogTagName)"
+                                         Variant="Variant.Filled"
+                                         Size="Size.Small"
+                                         Class="text-white">
+                                    <MudIcon Icon="@GetCategoryIcon(blog.BlogTagName)" Size="Size.Small" Class="mr-1" />
+                                    @blog.BlogTagName
+                                </MudChip>
+
+                                <MudChip T="string"
+                                         Color="@(blog.IsPublished ? Color.Success : Color.Warning)"
+                                         Variant="Variant.Text"
+                                         Size="Size.Small">
+                                    <MudIcon Icon="@(blog.IsPublished ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Schedule)"
+                                             Size="Size.Small" Class="mr-1" />
+                                    @(blog.IsPublished ? "Yayında" : "Taslak")
+                                </MudChip>
+                            </div>
+                        </MudCardContent>
+
+                        <!-- Card Actions -->
+                        <MudCardActions Class="justify-space-between px-4 pb-4">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Edit"
+                                       Size="Size.Small"
+                                       OnClick="@(() => EditBlog(blog))"
+                                       Style="text-transform: none;">
+                                Düzenle
+                            </MudButton>
+                            <MudButton Variant="Variant.Text"
+                                       Color="@(blog.IsPublished ? Color.Warning : Color.Success)"
+                                       StartIcon="@(blog.IsPublished ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                       Size="Size.Small"
+                                       OnClick="@(() => TogglePublishStatus(blog))"
+                                       Style="text-transform: none;">
+                                @(blog.IsPublished ? "Gizle" : "Yayınla")
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <!-- Pagination -->
+        @if (filteredBlogs.Count() > pageSize)
+        {
+            <MudPaper Class="pa-4 mt-6 text-center" Elevation="1" Style="border-radius: 16px;">
+                <MudPagination Count="@totalPages"
+                               @bind-Selected="currentPage"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               ShowFirstButton="true"
+                               ShowLastButton="true" />
+                <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2">
+                    @GetPaginationInfo()
+                </MudText>
+            </MudPaper>
+        }
+    }
+</MudContainer>
+
+@code {
+    private List<BlogPostDto> _blogs = new();
+    private List<BlogTagDto> categories = new();
+    private BlogPostDto? selectedBlog;
+    private string searchString = "";
+    private string selectedCategory = "";
+    private string statusFilter = "";
+    private bool isLoading = true;
+
+    // Kategori yönetimi için değişkenler
+    // Mevcut değişkenlere ek olarak:
+    private Guid? _editingCategoryId = null;
+    private string _editingCategoryName = "";
+    private bool _showBlogTagDrawer;
+  
+    private List<BlogTagDto> _services = new();
+    private string _newBlogTagName = "";
+    private bool _isServiceProcessing = false;
+
+    // Pagination
+    private int currentPage = 1;
+    private int pageSize = 6;
+    private int totalPages => (int)Math.Ceiling((double)filteredBlogs.Count() / pageSize);
+
+    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(searchString) ||
+                                     !string.IsNullOrWhiteSpace(selectedCategory) ||
+                                     !string.IsNullOrWhiteSpace(statusFilter);
+
+    private IEnumerable<BlogPostDto> filteredBlogs => _blogs
+        .Where(b => string.IsNullOrWhiteSpace(searchString) ||
+                    b.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    b.Author.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                    b.Slug.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        .Where(b => string.IsNullOrWhiteSpace(selectedCategory) ||
+                    b.BlogTagName == selectedCategory)
+        .Where(b => string.IsNullOrWhiteSpace(statusFilter) ||
+                    (statusFilter == "published" && b.IsPublished) ||
+                    (statusFilter == "draft" && !b.IsPublished))
+        .OrderByDescending(b => b.CreatedAt);
+
+    private IEnumerable<BlogPostDto> pagedBlogs => filteredBlogs
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBlogCategories();
+        await LoadData();
+    }
+
+    // Kategori düzenleme metodları
+    private void StartCategoryEdit(Guid categoryId, string currentName)
+    {
+        _editingCategoryId = categoryId;
+        _editingCategoryName = currentName;
+        StateHasChanged();
+    }
+
+    private void CancelCategoryEdit()
+    {
+        _editingCategoryId = null;
+        _editingCategoryName = "";
+        StateHasChanged();
+    }
+
+    private async Task HandleEditKeyPress(KeyboardEventArgs e, Guid categoryId)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_editingCategoryName))
+        {
+            await SaveCategoryEdit(categoryId);
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelCategoryEdit();
+        }
+    }
+
+    private async Task SaveCategoryEdit(Guid categoryId)
+    {
+        if (string.IsNullOrWhiteSpace(_editingCategoryName))
+        {
+            Snackbar.Add("Kategori adı boş olamaz", Severity.Warning);
+            return;
+        }
+
+        var trimmedName = _editingCategoryName.Trim();
+        var existingCategory = categories.FirstOrDefault(c => c.Id == categoryId);
+
+        if (existingCategory == null)
+        {
+            Snackbar.Add("Kategori bulunamadı", Severity.Error);
+            return;
+        }
+
+        // Aynı isimde başka kategori var mı kontrol et
+        if (categories.Any(c => c.Id != categoryId &&
+                              c.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            Snackbar.Add("Bu isimde bir kategori zaten mevcut", Severity.Warning);
+            return;
+        }
+
+        // Eğer isim değişmediyse güncelleme yapma
+        if (existingCategory.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase))
+        {
+            CancelCategoryEdit();
+            return;
+        }
+
+        _isServiceProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            // FIX 1: Create a new instance each time to avoid state issues
+            var updateCommand = new UpdateBlogTagCommand
+                {
+                    Id = categoryId,
+                    Name = trimmedName
+                };
+
+            await BlogService.UpdateBlogTagAsync(updateCommand);
+
+            Snackbar.Add($"Kategori '{existingCategory.Name}' başarıyla '{trimmedName}' olarak güncellendi", Severity.Success);
+
+            // Clear editing state first
+            CancelCategoryEdit();
+
+            // Reload data
+            await LoadBlogCategories();
+            await LoadBlogs(); // Blog listesini de güncelle çünkü kategori isimleri değişmiş olabilir
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kategori güncellenirken hata oluştu: {ex.Message}", Severity.Error);
+            // Log the full exception for debugging
+            Console.WriteLine($"Category update error: {ex}");
+        }
+        finally
+        {
+            _isServiceProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    // FIX 2: Improved AddBlogTag method
+    private async Task AddBlogTag()
+    {
+        if (string.IsNullOrWhiteSpace(_newBlogTagName))
+        {
+            Snackbar.Add("Kategori adı gereklidir", Severity.Warning);
+            return;
+        }
+
+        var trimmedName = _newBlogTagName.Trim();
+
+        // Aynı isimde kategori var mı kontrol et
+        if (categories.Any(c => c.Name.Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            Snackbar.Add("Bu isimde bir kategori zaten mevcut", Severity.Warning);
+            return;
+        }
+
+        _isServiceProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            // FIX 3: Create new instance instead of reusing
+            var createCommand = new CreateBlogTagCommand
+                {
+                    Name = trimmedName
+                };
+
+            await BlogService.CreateBlogTag(createCommand);
+
+            Snackbar.Add($"'{trimmedName}' kategorisi başarıyla eklendi", Severity.Success);
+
+            // Clear form
+            _newBlogTagName = "";
+
+            await LoadBlogCategories();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Kategori eklenirken hata oluştu: {ex.Message}", Severity.Error);
+            Console.WriteLine($"Category creation error: {ex}");
+        }
+        finally
+        {
+            _isServiceProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteBlogTag(Guid id)
+    {
+        var categoryToDelete = categories.FirstOrDefault(c => c.Id == id);
+        if (categoryToDelete == null)
+        {
+            Snackbar.Add("Kategori bulunamadı", Severity.Warning);
+            return;
+        }
+
+        // Bu kategoriye ait blog var mı kontrol et
+        var blogsWithCategory = _blogs.Where(b => b.BlogTagName == categoryToDelete.Name).ToList();
+        if (blogsWithCategory.Any())
+        {
+            Snackbar.Add($"Bu kategoriye ait {blogsWithCategory.Count} blog bulunduğu için silinemez", Severity.Warning);
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"'{categoryToDelete.Name}' kategorisini kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz." },
+            { "ButtonText", "Evet, Sil" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Kategori Silme Onayı", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                await BlogService.DeleteBlogTag(id);
+                Snackbar.Add($"'{categoryToDelete.Name}' kategorisi başarıyla silindi", Severity.Success);
+                await LoadBlogCategories();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Kategori silinirken hata oluştu: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            var loadBlogTask = LoadBlogs();
+            var loadCategoriesTask = LoadBlogCategories();
+
+            await Task.WhenAll(loadBlogTask, loadCategoriesTask);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Veriler yüklenirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadBlogs()
+    {
+        _blogs = await BlogService.GetAllAsync();
+    }
+
+    private async Task LoadBlogCategories()
+    {
+        categories = await BlogService.GetAllBlogTag();
+    }
+
+    private Color GetCategoryColor(string category) => category switch
+    {
+        "Teknoloji" => Color.Info,
+        "Seyahat" => Color.Success,
+        "Yemek" => Color.Warning,
+        "Sağlık" => Color.Error,
+        "Eğitim" => Color.Secondary,
+        "Spor" => Color.Tertiary,
+        _ => Color.Primary
+    };
+
+    private string GetCategoryIcon(string category) => category switch
+    {
+        "Teknoloji" => Icons.Material.Filled.Computer,
+        "Seyahat" => Icons.Material.Filled.Flight,
+        "Yemek" => Icons.Material.Filled.Restaurant,
+        "Sağlık" => Icons.Material.Filled.LocalHospital,
+        "Eğitim" => Icons.Material.Filled.School,
+        "Spor" => Icons.Material.Filled.FitnessCenter,
+        _ => Icons.Material.Filled.Article
+    };
+
+    private async Task TogglePublishStatus(BlogPostDto blog)
+    {
+        try
+        {
+            // await BlogService.TogglePublishStatus(blog.Id);
+            blog.IsPublished = !blog.IsPublished; // Geçici olarak UI'da değişikliği göster
+
+            var message = blog.IsPublished ? "Blog başarıyla yayınlandı" : "Blog yayından kaldırıldı";
+            Snackbar.Add(message, Severity.Success);
+
+            await LoadBlogs();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"İşlem sırasında hata oluştu: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task DeleteBlog(BlogPostDto blog)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"'{blog.Title}' başlıklı blog yazısını kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz." },
+            { "ButtonText", "Evet, Sil" },
+            { "Color", Color.Error }
+        };
+
+        var dialog = DialogService.Show<ConfirmDialog>("Blog Silme Onayı", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            try
+            {
+                await BlogService.DeleteBlog(blog.Id);
+                Snackbar.Add("Blog başarıyla silindi", Severity.Success);
+                await LoadBlogs();
+
+                // Sayfa kontrolü - eğer son öğe silindiyse önceki sayfaya git
+                if (currentPage > 1 && !pagedBlogs.Any())
+                {
+                    currentPage--;
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Blog silinirken hata oluştu: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void EditBlog(BlogPostDto blog)
+    {
+        Navigation.NavigateTo($"/admin/blogs/edit/{blog.Slug}");
+    }
+
+    private void CreateNewBlog()
+    {
+        Navigation.NavigateTo("/admin/blogs/create");
+    }
+
+    private void ClearFilters()
+    {
+        searchString = "";
+        selectedCategory = "";
+        statusFilter = "";
+        currentPage = 1;
+    }
+
+    private string GetPaginationInfo()
+    {
+        var startItem = (currentPage - 1) * pageSize + 1;
+        var endItem = Math.Min(currentPage * pageSize, filteredBlogs.Count());
+        var totalItems = filteredBlogs.Count();
+
+        return $"{startItem}-{endItem} / {totalItems} blog gösteriliyor";
+    }
+}

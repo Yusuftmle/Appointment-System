@@ -1,0 +1,227 @@
+﻿@using Application.Models
+@using Domain.Enums
+@inject IAppointmentService AppointmentService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6" Class="text-primary">
+                                    <MudIcon Icon="@Icons.Material.Filled.EventNote" Class="me-2" />
+                                    Randevu Detayı
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary">Servis Adı</MudText>
+                                    <MudText Typo="Typo.body1" Class="mb-3">@Detail?.ServiceName</MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary">Tarih ve Saat</MudText>
+                                    <MudText Typo="Typo.body1" Class="mb-3">
+                                        @Detail?.AppointmentDate.ToString("dd.MM.yyyy HH:mm")
+                                    </MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary">Müşteri Adı</MudText>
+                                    <MudText Typo="Typo.body1" Class="mb-3">@Detail?.UserName</MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary">Telefon Numarası</MudText>
+                                    <MudText Typo="Typo.body1" Class="mb-3">@Detail?.PhoneNumber</MudText>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudText Typo="Typo.subtitle2" Class="text-secondary">Telefon Numarası</MudText>
+                                    <MudText Typo="Typo.body1" Class="mb-3">@Detail?.appointmentType</MudText>
+                                </MudItem>
+                                @if (Detail?.ReservationStatus != null)
+                                {
+                                    <MudItem xs="12">
+                                        <MudText Typo="Typo.subtitle2" Class="text-secondary">Durum</MudText>
+                                        <MudChip T="string"
+                                                 Color="GetStatusColor(Detail.ReservationStatus)"
+                                                 Size="Size.Small">
+                                            @GetStatusText(Detail.ReservationStatus)
+                                        </MudChip>
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Success"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                   OnClick="ConfirmAppointment"
+                   Disabled="@(isProcessing || Detail?.ReservationStatus == ReservationStatus.Confirmed)">
+            @if (isProcessing && currentAction == "confirm")
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Onaylanıyor...</MudText>
+            }
+            else
+            {
+                <MudText>Onayla</MudText>
+            }
+        </MudButton>
+
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Cancel"
+                   OnClick="CancelAppointment"
+                   Disabled="@(isProcessing || Detail?.ReservationStatus == ReservationStatus.Canceled)">
+            @if (isProcessing && currentAction == "cancel")
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">İptal ediliyor...</MudText>
+            }
+            else
+            {
+                <MudText>İptal Et</MudText>
+            }
+        </MudButton>
+
+        <MudButton Color="Color.Default"
+                   Variant="Variant.Text"
+                   OnClick="Close">
+            Kapat
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AppointmentDto? Detail { get; set; }
+    [Parameter] public EventCallback<AppointmentDto> OnStatusChanged { get; set; }
+
+    private bool isProcessing = false;
+    private string currentAction = string.Empty;
+
+    private Color GetStatusColor(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Confirmed => Color.Success,
+            ReservationStatus.Canceled => Color.Error,
+            ReservationStatus.Pending => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Confirmed => "Onaylandı",
+            ReservationStatus.Canceled => "İptal Edildi",
+            ReservationStatus.Pending => "Beklemede",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private async Task ConfirmAppointment()
+    {
+        if (Detail == null || isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            currentAction = "confirm";
+            StateHasChanged();
+
+            var success = await AppointmentService.ConfirmAppointmentAsync(Detail.Id);
+
+            if (success != null)
+            {
+                // Detail'i güncelle
+                Detail.ReservationStatus = ReservationStatus.Confirmed;
+                StateHasChanged(); // UI'ı hemen güncelle
+
+                Snackbar.Add("Randevu başarıyla onaylandı!", Severity.Success);
+
+                // Parent component'e değişikliği bildir
+                if (OnStatusChanged.HasDelegate)
+                {
+                    await OnStatusChanged.InvokeAsync(Detail);
+                }
+
+                MudDialog.Close(DialogResult.Ok(Detail));
+            }
+            else
+            {
+                Snackbar.Add("Randevu onaylanamadı!", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Randevu onaylanırken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+            currentAction = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CancelAppointment()
+    {
+        if (Detail == null || isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            currentAction = "cancel";
+            StateHasChanged();
+
+            var success = await AppointmentService.CancelAppointmentAsync(Detail.Id);
+
+            if (success != null)
+            {
+                // Detail'i güncelle
+                Detail.ReservationStatus = ReservationStatus.Canceled;
+                StateHasChanged(); // UI'ı hemen güncelle
+
+                Snackbar.Add("Randevu başarıyla iptal edildi!", Severity.Success);
+
+                // Parent component'e değişikliği bildir
+                if (OnStatusChanged.HasDelegate)
+                {
+                    await OnStatusChanged.InvokeAsync(Detail);
+                }
+
+                MudDialog.Close(DialogResult.Ok(Detail));
+            }
+            else
+            {
+                Snackbar.Add("Randevu iptal edilemedi!", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Randevu iptal edilirken hata oluştu: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isProcessing = false;
+            currentAction = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void Close()
+    {
+        MudDialog.Cancel();
+    }
+}

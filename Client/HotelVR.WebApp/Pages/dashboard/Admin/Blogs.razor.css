@@ -1,0 +1,29 @@
+﻿
+.blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.text-error {
+    color: var(--mud-palette-error) !important;
+}
+
+
+
+.blog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.text-error {
+    color: var(--mud-palette-error) !important;
+}
+

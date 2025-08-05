@@ -1,0 +1,138 @@
+﻿@page "/admin/blogs/create"
+@using Application.Models
+@using Application.RequestModels.BlogPost.CreateBlog
+@using HotelVR.WebApp.Infrastructure
+@using static System.Net.WebRequestMethods
+@inject IBlogPostService BlogService
+@inject IidentityService IdentityService
+@inject UploadService UploadService
+@inject NavigationManager Nav
+@layout AdminLayout
+@inject IJSRuntime JS
+
+<MudGrid Class="mt-4">
+    <MudItem xs="12" md="8">
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h5" Class="mb-3 text-primary font-weight-bold">Yeni Blog Yazısı</MudText>
+
+            <MudTextField @bind-Value="model.Title" Label="Başlık" Variant="Variant.Outlined" Required="true" Class="mb-3" />
+
+            <!-- TinyMCE Editor -->
+            <TinyMCE.Blazor.Editor  @bind-Value="model.Content"
+                                   Conf="tinyMceConfig" 
+                                   Id="blogEditor" 
+                                   ClassName="border rounded"
+                                   ApiKey="5r7av63pfms7hckbu5s9cymiym8wve9fgxgwl3cpb6dkz4pa" />
+
+
+            <MudTextField @bind-Value="model.Summary" Label="Özet" Variant="Variant.Outlined" Lines="3" />
+            </MudPaper>
+            </MudItem>
+            <!-- SAĞ TARAF: Ayarlar -->
+            <MudItem xs="12" md="4">
+                <MudPaper Class="p-4">
+                    <MudText Typo="Typo.h6" Class="mb-2">Etiket</MudText>
+                    <MudSelect T="Guid" @bind-Value="model.BlogTagId" Label="Etiket Seçin" Required="true">
+                        @foreach (var tag in tags)
+                        {
+                            <MudSelectItem Value="@tag.Id">@tag.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+
+            <MudDivider Class="my-3" />
+
+            <MudText Typo="Typo.h6" Class="mb-2">Kapak Görsel</MudText>
+
+            <div id="coverDropzone" class="dropzone dz-clickable mb-3">
+                <div class="dz-message">Resmi buraya bırakın veya seçin</div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(model.CoverImageUrl))
+            {
+                <MudPaper Class="mt-3 p-2" Elevation="0">
+                    <img src="@model.CoverImageUrl" style="max-height:200px; width:100%" />
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Error"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               OnClick="RemoveImage"
+                               Class="mt-2">
+                        Kaldır
+                    </MudButton>
+                </MudPaper>
+            }
+
+
+            <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.h6" Class="mb-2">Anahtar Kelimeler</MudText>
+                    <MudTextField @bind-Value="model.Keywords" Variant="Variant.Outlined" Placeholder="kelime1, kelime2" />
+
+                    <MudDivider Class="my-3" />
+
+
+
+                    <MudButton OnClick="Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4 w-100">
+                        Kaydet
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+</MudGrid>
+
+@code {
+    private CreateBlogPostCommand model = new();
+    private List<BlogTagDto> tags = new();
+    // Refs
+    private DotNetObjectReference<BlogPostEditor>? dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("initializeCoverDropzone", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public void OnCoverUploaded(string imageUrl)
+    {
+        model.CoverImageUrl = imageUrl;
+        StateHasChanged();
+    }
+    private void RemoveImage()
+    {
+        model.CoverImageUrl = string.Empty;
+        StateHasChanged();
+    }
+
+    // TinyMCE Konfigürasyonu
+    private  Dictionary<string, object> tinyMceConfig = new Dictionary<string, object>
+    {
+        { "plugins", "preview paste searchreplace autolink autosave code visualblocks visualchars image link media table codesample hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount textpattern noneditable help charmap emoticons" },
+        { "toolbar", "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | preview save print | insertfile image media link anchor codesample | ltr rtl | blocks fontfamily fontsize| addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat" },
+        { "height", 500 },
+        { "images_upload_url", "blob:https://www.tiny.cloud" },
+        { "branding", false },
+        { "menubar", false },
+        { "apiKey", "5r7av63pFms7hclbUs59cym1ym8wve9fqxgw13cpb6dkz4pa" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        tags = await BlogService.GetAllBlogTag();
+        model.IsPublished = true;
+    }
+
+    private async Task Submit()
+    {
+        model.CreatedAt = DateTime.UtcNow;
+        model.UserId = IdentityService.GetUserId();
+        model.Author = IdentityService.GetUserName();
+        
+        var id = await BlogService.CreateAsync(model);
+        Nav.NavigateTo($"/admin/blogs");
+    }
+
+   
+}

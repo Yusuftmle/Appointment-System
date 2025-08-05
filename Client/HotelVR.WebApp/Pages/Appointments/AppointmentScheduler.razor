@@ -1,0 +1,976 @@
+﻿@page "/rezervasyon"
+@using Application.Models
+@using Application.RequestModels.Appointment
+@using Domain.Enums
+@using Domain.Models
+@using Blazored.Modal
+@using Blazored.Modal.Services
+@using HotelVR.WebApp.Pages.Component
+@inject IAppointmentService _appointmentService
+@inject IidentityService identityservice
+@inject HttpClient _httpClient 
+@inject IEmailService mailservice
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<!-- Hero Section -->
+<div class="rezervasyon-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">🎯 Hemen Rezervasyon Yapın</h1>
+                <p class="hero-subtitle">Uzman ekibimizle buluşmak için en uygun tarih ve saati seçin. Sadece birkaç tık ile randevunuz hazır!</p>
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Anlık Onay</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Esnek İptal</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Güvenli Rezervasyon</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Mutlu Müşteri</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">%98</div>
+                        <div class="stat-label">Memnuniyet Oranı</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Destek</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breadcrumb for SEO -->
+<nav aria-label="breadcrumb" class="breadcrumb-container">
+    <div class="container">
+        <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/">
+                    <span itemprop="name">Ana Sayfa</span>
+                </a>
+                <meta itemprop="position" content="1" />
+            </li>
+            <li class="breadcrumb-item active" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <span itemprop="name">Rezervasyon</span>
+                <meta itemprop="position" content="2" />
+            </li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Reservation Steps -->
+<section class="reservation-steps" aria-labelledby="reservation-steps-title">
+    <div class="container">
+        <h2 id="reservation-steps-title" class="text-center mb-5">✨ 3 Basit Adımda Rezervasyon</h2>
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card @(SelectedDate != DateTime.Today ? "completed" : "active")">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>📅 Tarih Seçin</h3>
+                        <p>Size uygun olan tarihi takvimden seçin</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card @(SelectedTime != null ? "completed" : (SelectedDate != DateTime.Today ? "active" : ""))">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>⏰ Saat Seçin</h3>
+                        <p>Müsait saatlerden size uygun olanı seçin</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card @(SelectedService != null && SelectedTime != null ? "active" : "")">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>🎯 Hizmeti Seçin</h3>
+                        <p>İhtiyacınıza uygun hizmeti belirleyin</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main class="rezervasyon-page" role="main">
+    <div class="booking-container">
+
+        <!-- Important Notice -->
+        <aside class="booking-notice" role="complementary" aria-labelledby="important-info">
+            <div class="notice-content">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <div>
+                    <strong id="important-info">📋 Önemli Bilgiler:</strong>
+                    <ul>
+                        <li>Rezervasyonlar en az 24 saat önceden yapılmalıdır</li>
+                        <li>İptal işlemleri randevu saatinden 2 saat öncesine kadar ücretsizdir</li>
+                        <li>Hafta sonları hizmet vermemekteyiz</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <div class="row">
+            <!-- TAKVİM -->
+            <div class="col-lg-7 col-md-12">
+                <section class="card rezervasyon-calendar-card" aria-labelledby="calendar-title">
+                    <header class="rezervasyon-calendar-header d-flex justify-content-between align-items-center">
+                        <button class="btn rezervasyon-nav-btn" @onclick="PreviousMonth"
+                                aria-label="Önceki ay">
+                            &lt;
+                        </button>
+                        <h2 id="calendar-title">@SelectedDate.ToString("MMMM yyyy")</h2>
+                        <button class="btn rezervasyon-nav-btn" @onclick="NextMonth"
+                                aria-label="Sonraki ay">
+                            &gt;
+                        </button>
+                    </header>
+
+                    <div class="p-3">
+                        <table class="table rezervasyon-calendar-table" role="grid" aria-label="Takvim">
+                            <thead>
+                                <tr role="row">
+                                    @foreach (var day in DaysOfWeek)
+                                    {
+                                        <th class="text-center" role="columnheader">@day</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var week in CalendarRows)
+                                {
+                                    <tr role="row">
+                                        @foreach (var day in week)
+                                        {
+                                            <td class="@GetDayClass(day) @(IsToday(day) ? "rezervasyon-today" : "") text-center"
+                                                role="gridcell"
+                                                tabindex="@(CanSelectDate(day) ? "0" : "-1")"
+                                                aria-label="@GetDateAriaLabel(day)"
+                                                @onclick="() => SelectDate(day)"
+                                                @onkeydown="@(async (KeyboardEventArgs e) => await HandleDateKeyDown(e, day))">
+                                                @(day.Day > 0 ? day.Day.ToString() : "")
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                    <div class="availability-header">
+                        <h3>📅 @SelectedDate.ToString("dd MMMM dddd") Müsaitliği</h3>
+                        @if (AvailableTimeSlots.Any())
+                        {
+                            <span class="availability-count">(@AvailableTimeSlots.Count müsait saat)</span>
+                        }
+                    </div>
+
+                    <div class="rezervasyon-time-slots-container" role="group" aria-labelledby="time-slots-title">
+                        <h4 id="time-slots-title" class="sr-only">Müsait Saatler</h4>
+                        @if (AvailableTimeSlots.Any())
+                        {
+                            @foreach (var slot in AvailableTimeSlots)
+                            {
+                                <button class="rezervasyon-time-slot @(slot == SelectedTime ? "rezervasyon-active" : "")"
+                                        @onclick="() => SelectTime(slot)"
+                                        aria-pressed="@(slot == SelectedTime ? "true" : "false")"
+                                        aria-label="Saat @slot.AppointmentDateTime.ToString("HH:mm")">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                    @slot.AppointmentDateTime.ToString("HH:mm")
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-slots-message" role="status">
+                                <i class="fas fa-calendar-times" aria-hidden="true"></i>
+                                <p>Bu tarih için müsait saat bulunmamaktadır</p>
+                                <small>Lütfen başka bir tarih seçiniz</small>
+                            </div>
+                        }
+                    </div>
+                </section>
+            </div>
+
+            <!-- HİZMET DETAY -->
+            <div class="col-lg-5 col-md-12 mt-4 mt-lg-0">
+                <section class="card rezervasyon-service-card h-100" aria-labelledby="service-selection-title">
+                    <div class="card-body">
+                        <h2 id="service-selection-title" class="text-center mb-4">🎯 Hizmet Seçimi</h2>
+
+                        <div class="d-grid gap-2" role="group" aria-labelledby="services-title">
+                            <h3 id="services-title" class="sr-only">Hizmetler</h3>
+                            @foreach (var service in Services)
+                            {
+                                <button class="rezervasyon-service-button @(SelectedService == service ? "rezervasyon-selected" : "")"
+                                        @onclick="() => SelectedService = service"
+                                        aria-pressed="@(SelectedService == service ? "true" : "false")"
+                                        aria-describedby="service-@service.Id-desc">
+                                    <div class="service-info">
+                                        <strong>@service.Name</strong>
+                                        <small id="service-@service.Id-desc" class="service-description">@service.Description</small>
+                                    </div>
+                                    @if (SelectedService == service)
+                                    {
+                                        <i class="fas fa-check-circle service-check" aria-hidden="true"></i>
+                                    }
+                                </button>
+                            }
+                        </div>
+
+                        @if (SelectedService != null && SelectedTime != null)
+                        {
+                            <div class="reservation-summary" role="region" aria-labelledby="summary-title">
+                                <h3 id="summary-title">📋 Rezervasyon Özeti</h3>
+                                <dl class="summary-list">
+                                    <div class="summary-item">
+                                        <dt><i class="fas fa-calendar" aria-hidden="true"></i> Tarih:</dt>
+                                        <dd>@SelectedDate.ToString("dd MMMM yyyy")</dd>
+                                    </div>
+                                    <div class="summary-item">
+                                        <dt><i class="fas fa-clock" aria-hidden="true"></i> Saat:</dt>
+                                        <dd>@SelectedTime?.AppointmentDateTime.ToString("HH:mm")</dd>
+                                    </div>
+                                    <div class="summary-item">
+                                        <dt><i class="fas fa-cogs" aria-hidden="true"></i> Hizmet:</dt>
+                                        <dd>@SelectedService.Name</dd>
+                                    </div>
+                                
+                                    <div class="summary-item">
+                                        <dt><i class="fas fa-@(SelectedAppointmentType == AppointmentType.FaceToFace ? "users" : "video")" aria-hidden="true"></i> Randevu Türü:</dt>
+                                        <dd>@(SelectedAppointmentType == AppointmentType.FaceToFace ? "Yüz Yüze" : "Online")</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        }
+                        <!-- RANDEVu TÜRÜ SEÇİMİ -->
+                        <div class="appointment-type-selection mt-4" role="group" aria-labelledby="appointment-type-title">
+                            <h3 id="appointment-type-title" class="mb-3">📞 Randevu Türü</h3>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <button class="appointment-type-button @(SelectedAppointmentType == AppointmentType.FaceToFace ? "selected" : "")"
+                                            @onclick="() => SelectedAppointmentType = AppointmentType.FaceToFace"
+                                            aria-pressed="@(SelectedAppointmentType == AppointmentType.FaceToFace ? "true" : "false")"
+                                            type="button">
+                                        <div class="appointment-type-content">
+                                            <i class="fas fa-users" aria-hidden="true"></i>
+                                            <strong>Yüz Yüze</strong>
+                                            <small>Ofisimizde görüşme</small>
+                                        </div>
+                                        @if (SelectedAppointmentType == AppointmentType.FaceToFace)
+                                        {
+                                            <i class="fas fa-check-circle appointment-type-check" aria-hidden="true"></i>
+                                        }
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="appointment-type-button @(SelectedAppointmentType == AppointmentType.Online ? "selected" : "")"
+                                            @onclick="() => SelectedAppointmentType = AppointmentType.Online"
+                                            aria-pressed="@(SelectedAppointmentType == AppointmentType.Online ? "true" : "false")"
+                                            type="button">
+                                        <div class="appointment-type-content">
+                                            <i class="fas fa-video" aria-hidden="true"></i>
+                                            <strong>Online</strong>
+                                            <small>Video görüşme ile</small>
+                                        </div>
+                                        @if (SelectedAppointmentType == AppointmentType.Online)
+                                        {
+                                            <i class="fas fa-check-circle appointment-type-check" aria-hidden="true"></i>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trust Indicators -->
+                        <div class="trust-indicators" role="complementary" aria-label="Güven göstergeleri">
+                            <div class="trust-item">
+                                <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                                <span>Güvenli Ödeme</span>
+                            </div>
+                            <div class="trust-item">
+                                <i class="fas fa-undo" aria-hidden="true"></i>
+                                <span>Ücretsiz İptal</span>
+                            </div>
+                            <div class="trust-item">
+                                <i class="fas fa-headset" aria-hidden="true"></i>
+                                <span>7/24 Destek</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary rezervasyon-next-button mt-4 w-100"
+                                @onclick="BookAppointment"
+                                disabled="@(SelectedTime == null || SelectedService == null)"
+                                aria-describedby="@(SelectedTime == null || SelectedService == null ? "button-help" : "")">
+                            @if (SelectedTime == null || SelectedService == null)
+                            {
+                                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                                <span>Tarih ve Hizmet Seçiniz</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-check" aria-hidden="true"></i>
+                                <span>Rezervasyonu Tamamla</span>
+                            }
+                        </button>
+                        <div id="button-help" class="sr-only">
+                            @if (SelectedTime == null || SelectedService == null)
+                            {
+                                <span>Devam etmek için lütfen tarih, saat ve hizmet seçiniz</span>
+                            }
+                        </div>
+
+
+                        @if (!string.IsNullOrEmpty(resultMessage))
+                        {
+                            <div class="success-message mt-3" role="status" aria-live="polite">
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                @resultMessage
+                            </div>
+                        }
+                        @if (ShowLoginWarning)
+                        {
+                            <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">⚠️ Giriş Yapmanız Gerekiyor</h5>
+                                            <button type="button" class="btn-close" @onclick="CloseLoginWarning"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Rezervasyon yapabilmek için lütfen giriş yapın ya da kayıt olun.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" @onclick="NavigateToLogin">Giriş Yap</button>
+                                            <button class="btn btn-secondary" @onclick="NavigateToRegister">Kayıt Ol</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <section class="faq-section mt-5" aria-labelledby="faq-title">
+            <div class="container">
+                <h2 id="faq-title" class="text-center mb-4">❓ Sıkça Sorulan Sorular</h2>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <article class="faq-item" itemscope itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">🕐 Rezervasyon ne kadar sürede onaylanır?</h3>
+                            <div itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                                <p itemprop="text">Rezervasyonunuz anında onaylanır ve size e-posta ile bildirim gönderilir.</p>
+                            </div>
+                        </article>
+                        <article class="faq-item" itemscope itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">📱 Rezervasyonumu nasıl iptal edebilirim?</h3>
+                            <div itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                                <p itemprop="text">Randevu saatinizden en az 2 saat önce iptal edebilirsiniz. İletişim bölümünden bize ulaşın.</p>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-lg-6">
+                        <article class="faq-item" itemscope itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">💰 Rezervasyon ücreti var mı?</h3>
+                            <div itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                                <p itemprop="text">Rezervasyon tamamen ücretsizdir. Sadece hizmet bedeli randevu sırasında alınır.</p>
+                            </div>
+                        </article>
+                        <article class="faq-item" itemscope itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">🏥 Hangi günler hizmet veriyorsunuz?</h3>
+                            <div itemscope itemtype="https://schema.org/Answer" itemprop="acceptedAnswer">
+                                <p itemprop="text">Pazartesi-Cuma arası hizmet vermekteyiz. Hafta sonları kapalıyız.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+@code {
+    public DateTime SelectedDate { get; set; } = DateTime.Today;
+    public TimeSlotDto? SelectedTime { get; set; }
+    public List<List<DateTime>> CalendarRows { get; set; } = new();
+    public List<TimeSlotDto> AvailableTimeSlots { get; set; } = new();
+    public List<ServiceDto> Services { get; set; } = new();
+    public ServiceDto? SelectedService { get; set; }
+    public Guid? UserId { get; set; }
+    string resultMessage = "";
+    public bool IsLoggingIn { get; set; } 
+    private bool ShowLoginWarning { get; set; } = false;
+    public AppointmentType SelectedAppointmentType { get; set; } 
+
+    [CascadingParameter]
+    public IModalService? Modal { get; set; }
+
+    public List<string> DaysOfWeek => new() { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadUser();
+        GenerateCalendar();
+        await LoadServices();
+        await LoadAvailableTimes();
+        await SetupSEO();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetupSEO();
+        }
+    }
+
+
+    private void IsloggidIn()
+    {
+        IsLoggingIn = !identityservice.IsLoggedIn;
+
+    }
+
+    private async Task SetupSEO()
+    {
+        try
+        {
+            // Page Title
+            await JSRuntime.InvokeVoidAsync("setTitle", "Online Rezervasyon Sistemi - Hızlı ve Güvenli Randevu Al");
+
+            // Meta Tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "description",
+                "Uzman ekibimizle randevu almak için online rezervasyon sistemi. 24 saat önceden rezervasyon, ücretsiz iptal, güvenli ödeme. Hemen rezervasyon yapın!");
+
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "keywords",
+                "online rezervasyon, randevu sistemi, rezervasyon yap, randevu al, online booking, appointment booking");
+
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "author", "HotelVR");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "robots", "index, follow");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "language", "tr");
+
+            // Open Graph Tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:title", "Online Rezervasyon Sistemi - Hızlı ve Güvenli Randevu Al", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:description",
+                "Uzman ekibimizle randevu almak için online rezervasyon sistemi. 24 saat önceden rezervasyon, ücretsiz iptal, güvenli ödeme.", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:type", "website", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:url", $"{GetBaseUrl()}/rezervasyon", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:image", $"{GetBaseUrl()}/images/reservation-og-image.jpg", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:image:width", "1200", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:image:height", "630", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:locale", "tr_TR", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:site_name", "HotelVR", "property");
+
+            // Twitter Card Tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:card", "summary_large_image", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:title", "Online Rezervasyon Sistemi - Hızlı ve Güvenli Randevu Al", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:description",
+                "Uzman ekibimizle randevu almak için online rezervasyon sistemi. 24 saat önceden rezervasyon, ücretsiz iptal, güvenli ödeme.", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:image", $"{GetBaseUrl()}/images/reservation-twitter-card.jpg", "name");
+
+            // Additional Meta Tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "viewport", "width=device-width, initial-scale=1.0", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTagHttpEquiv", "X-UA-Compatible", "IE=edge");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "theme-color", "#007bff", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "apple-mobile-web-app-capable", "yes", "name");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "mobile-web-app-capable", "yes", "name");
+
+            // Canonical URL
+            await JSRuntime.InvokeVoidAsync("setCanonical", $"{GetBaseUrl()}/rezervasyon");
+
+            // Structured Data
+            await SetupStructuredData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SEO setup error: {ex.Message}");
+        }
+    }
+
+    private async Task SetupStructuredData()
+    {
+        var organizationSchema = new
+        {
+            context = "https://schema.org",
+            type = "Organization",
+            name = "HotelVR",
+            url = GetBaseUrl(),
+            logo = $"{GetBaseUrl()}/images/logo.png",
+            contactPoint = new[]
+            {
+                new
+                {
+                    type = "ContactPoint",
+                    telephone = "+90-XXX-XXX-XXXX",
+                    contactType = "customer service",
+                    availableLanguage = "Turkish",
+                    areaServed = "TR"
+                }
+            },
+            sameAs = new[]
+            {
+                "https://www.facebook.com/hotelvrtr",
+                "https://www.instagram.com/hotelvrtr",
+                "https://twitter.com/hotelvrtr"
+            }
+        };
+
+        var webPageSchema = new
+        {
+            context = "https://schema.org",
+            type = "WebPage",
+            name = "Online Rezervasyon Sistemi",
+            description = "Uzman ekibimizle randevu almak için online rezervasyon sistemi. Hızlı, güvenli ve kolay rezervasyon.",
+            url = $"{GetBaseUrl()}/rezervasyon",
+            inLanguage = "tr-TR",
+            isPartOf = new
+            {
+                type = "WebSite",
+                name = "HotelVR",
+                url = GetBaseUrl()
+            },
+            breadcrumb = new
+            {
+                type = "BreadcrumbList",
+                itemListElement = new[]
+                {
+                    new
+                    {
+                        type = "ListItem",
+                        position = 1,
+                        name = "Ana Sayfa",
+                        item = GetBaseUrl()
+                    },
+                    new
+                    {
+                        type = "ListItem",
+                        position = 2,
+                        name = "Rezervasyon",
+                        item = $"{GetBaseUrl()}/rezervasyon"
+                    }
+                }
+            }
+        };
+
+        var serviceSchema = new
+        {
+            context = "https://schema.org",
+            type = "Service",
+            name = "Online Rezervasyon Hizmeti",
+            description = "Profesyonel ekibimizle randevu almanız için online rezervasyon sistemi. 24 saat önceden rezervasyon gereklidir.",
+            provider = new
+            {
+                type = "Organization",
+                name = "HotelVR",
+                url = GetBaseUrl()
+            },
+            areaServed = "Turkey",
+            availableChannel = new
+            {
+                type = "ServiceChannel",
+                serviceUrl = $"{GetBaseUrl()}/rezervasyon",
+                serviceType = "Online Booking"
+            },
+            hoursAvailable = new[]
+            {
+                new
+                {
+                    type = "OpeningHoursSpecification",
+                    dayOfWeek = new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" },
+                    opens = "09:00",
+                    closes = "18:00"
+                }
+            }
+        };
+
+        var faqSchema = new
+        {
+            context = "https://schema.org",
+            type = "FAQPage",
+            mainEntity = new[]
+            {
+                new
+                {
+                    type = "Question",
+                    name = "Rezervasyon ne kadar sürede onaylanır?",
+                    acceptedAnswer = new
+                    {
+                        type = "Answer",
+                        text = "Rezervasyonunuz anında onaylanır ve size e-posta ile bildirim gönderilir."
+                    }
+                },
+                new
+                {
+                    type = "Question",
+                    name = "Rezervasyonumu nasıl iptal edebilirim?",
+                    acceptedAnswer = new
+                    {
+                        type = "Answer",
+                        text = "Randevu saatinizden en az 2 saat önce iptal edebilirsiniz. İletişim bölümünden bize ulaşın."
+                    }
+                },
+                new
+                {
+                    type = "Question",
+                    name = "Rezervasyon ücreti var mı?",
+                    acceptedAnswer = new
+                    {
+                        type = "Answer",
+                        text = "Rezervasyon tamamen ücretsizdir. Sadece hizmet bedeli randevu sırasında alınır."
+                    }
+                },
+                new
+                {
+                    type = "Question",
+                    name = "Hangi günler hizmet veriyorsunuz?",
+                    acceptedAnswer = new
+                    {
+                        type = "Answer",
+                        text = "Pazartesi-Cuma arası hizmet vermekteyiz. Hafta sonları kapalıyız."
+                    }
+                }
+            }
+        };
+
+        // Combine all schemas
+        var combinedSchema = new
+        {
+            context = "https://schema.org",
+            graph = new object[] { organizationSchema, webPageSchema, serviceSchema, faqSchema }
+        };
+
+        await JSRuntime.InvokeVoidAsync("addPageSchema", System.Text.Json.JsonSerializer.Serialize(combinedSchema));
+    }
+
+    private string GetBaseUrl()
+    {
+        // Bu değeri kendi domain'inizle değiştirin
+        return "https://www.hotelvrtr.com";
+    }
+
+    // Accessibility helper methods
+    private bool CanSelectDate(DateTime date)
+    {
+        return date >= DateTime.Today &&
+               date.DayOfWeek != DayOfWeek.Saturday &&
+               date.DayOfWeek != DayOfWeek.Sunday;
+    }
+
+    private string GetDateAriaLabel(DateTime date)
+    {
+        if (date.Day <= 0) return "";
+
+        var dayName = date.ToString("dddd", new System.Globalization.CultureInfo("tr-TR"));
+        var monthName = date.ToString("MMMM", new System.Globalization.CultureInfo("tr-TR"));
+
+        if (!CanSelectDate(date))
+            return $"{date.Day} {monthName} {dayName} - Seçilemez";
+
+        if (date.Date == SelectedDate.Date)
+            return $"{date.Day} {monthName} {dayName} - Seçili";
+
+        return $"{date.Day} {monthName} {dayName} - Seçilebilir";
+    }
+
+    private async Task HandleDateKeyDown(KeyboardEventArgs e, DateTime date)
+    {
+        if ((e.Key == "Enter" || e.Key == " ") && CanSelectDate(date))
+        {
+            await SelectDateAsync(date);
+        }
+    }
+
+    private void LoadUser()
+    {
+        UserId = identityservice.GetUserId();
+    }
+
+    private void GenerateCalendar()
+    {
+        var firstDay = new DateTime(SelectedDate.Year, SelectedDate.Month, 1);
+        var lastDay = firstDay.AddMonths(1).AddDays(-1);
+        int startOffset = ((int)firstDay.DayOfWeek + 6) % 7;
+
+        var calendarDays = new List<DateTime>();
+
+        for (int i = startOffset; i > 0; i--)
+            calendarDays.Add(firstDay.AddDays(-i));
+
+        for (int i = 1; i <= lastDay.Day; i++)
+            calendarDays.Add(new DateTime(SelectedDate.Year, SelectedDate.Month, i));
+
+        int remaining = 7 - (calendarDays.Count % 7);
+        if (remaining < 7)
+            for (int i = 1; i <= remaining; i++)
+                calendarDays.Add(lastDay.AddDays(i));
+
+        CalendarRows = calendarDays
+            .Select((d, i) => new { d, i })
+            .GroupBy(x => x.i / 7)
+            .Select(g => g.Select(x => x.d).ToList())
+            .ToList();
+    }
+
+    private async Task LoadServices()
+    {
+        Services = await _appointmentService.GetServicesAsync();
+        SelectedService = Services.FirstOrDefault();
+    }
+
+    private async Task LoadAvailableTimes()
+    {
+        var allSlots = await _appointmentService.GetAvailableTimesAsync(SelectedDate);
+        AvailableTimeSlots = allSlots
+            .Where(slot => slot.AppointmentDateTime.Date == SelectedDate.Date)
+            .ToList();
+        await RemoveBookedTimes();
+    }
+
+    private async Task RemoveBookedTimes()
+    {
+        var appointments = await _appointmentService.GetAllAppointmentsAsync();
+        var bookedTimes = appointments
+            .Where(a => a.AppointmentDate.Date == SelectedDate.Date)
+            .Select(a => a.AppointmentDate)
+            .ToList();
+
+        AvailableTimeSlots = AvailableTimeSlots
+            .Where(slot => !bookedTimes.Contains(slot.AppointmentDateTime))
+            .ToList();
+
+        StateHasChanged();
+    }
+
+    private async Task SelectDateAsync(DateTime date)
+    {
+        if (date < DateTime.Today || date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            return;
+
+        SelectedDate = date;
+        SelectedTime = null;
+        await LoadAvailableTimes();
+    }
+
+    private async void SelectDate(DateTime date)
+    {
+        await SelectDateAsync(date);
+    }
+
+    private void SelectTime(TimeSlotDto slot) => SelectedTime = slot;
+
+    private void PreviousMonth()
+    {
+        if (SelectedDate.Month == DateTime.Today.Month && SelectedDate.Year == DateTime.Today.Year)
+            return;
+
+        SelectedDate = SelectedDate.AddMonths(-1);
+        GenerateCalendar();
+    }
+
+    private void NextMonth()
+    {
+        SelectedDate = SelectedDate.AddMonths(1);
+        GenerateCalendar();
+    }
+
+    private string GetDayClass(DateTime date)
+    {
+        if (date < DateTime.Today) return "disabled-day";
+        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) return "weekend-day";
+        return date.Date == SelectedDate.Date ? "selected-day" : "available-day";
+    }
+
+    private bool IsToday(DateTime date) => date.Date == DateTime.Today;
+
+    private async Task BookAppointment()
+    {
+        if (!identityservice.IsLoggedIn)
+        {
+            ShowLoginWarning = true;
+            return;
+        }
+
+        if (SelectedTime is null || SelectedService is null)
+            return;
+
+        try
+        {
+            var command = new CreateAppointmentCommand
+                {
+                    UserId = UserId,
+                    ServiceId = SelectedService.Id,
+                    AppointmentDateTime = SelectedTime.AppointmentDateTime,
+                    Type = SelectedAppointmentType, // Bu satır eklendi
+                    IsConfirmed = true
+                };
+
+            var responseId = await _appointmentService.CreateAppointmentAsync(command);
+
+            resultMessage = $"🎉 Randevunuz başarıyla oluşturuldu! ID: {responseId}";
+
+            Modal?.Show<BaseModalComponent>("Randevu Başarılı");
+
+            // Track successful booking for analytics
+            await TrackBookingSuccess(responseId.ToString());
+
+            // Müşteri email adresini al (kullanıcı bilgilerinden)
+            string customerEmail = identityservice.GetEmail();
+
+            // Admin email adresi
+            string adminEmail = "hucks.parament.2001@gmail.com";
+
+            // Hem müşteri hem admin'e mail gönder
+            await mailservice.SendReservationEmailsAsync(
+                customerEmail: customerEmail,
+                adminEmail: adminEmail,
+                appointmentDate: SelectedTime.AppointmentDateTime,
+                serviceName: SelectedService.Name,
+                appointmentId: responseId.ToString()
+            );
+
+            // Update structured data with booking confirmation
+            await UpdateBookingStructuredData(responseId.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Randevu oluşturulurken hata: {ex.Message}");
+            resultMessage = "❌ Rezervasyon sırasında bir hata oluştu. Lütfen tekrar deneyin.";
+
+            // Track booking error for analytics
+            await TrackBookingError(ex.Message);
+        }
+    }
+
+    private async Task TrackBookingSuccess(string bookingId)
+    {
+        try
+        {
+            // Google Analytics 4 event tracking
+            await JSRuntime.InvokeVoidAsync("gtag", "event", "purchase", new
+            {
+                transaction_id = bookingId,
+                value = 0, // Set actual service price if available
+                currency = "TRY",
+                items = new[]
+                {
+                    new
+                    {
+                        item_id = SelectedService?.Id.ToString(),
+                        item_name = SelectedService?.Name,
+                        category = "Service",
+                        quantity = 1,
+                        price = 0 // Set actual price
+                    }
+                }
+            });
+
+            // Custom booking event
+            await JSRuntime.InvokeVoidAsync("gtag", "event", "booking_completed", new
+            {
+                booking_id = bookingId,
+                service_name = SelectedService?.Name,
+                appointment_date = SelectedDate.ToString("yyyy-MM-dd"),
+                appointment_time = SelectedTime?.AppointmentDateTime.ToString("HH:mm")
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Analytics tracking error: {ex.Message}");
+        }
+    }
+
+    private async Task TrackBookingError(string errorMessage)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("gtag", "event", "booking_error", new
+            {
+                error_message = errorMessage,
+                service_name = SelectedService?.Name,
+                appointment_date = SelectedDate.ToString("yyyy-MM-dd")
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error analytics tracking error: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateBookingStructuredData(string bookingId)
+    {
+        try
+        {
+            var bookingSchema = new
+            {
+                context = "https://schema.org",
+                type = "ReservationConfirmation",
+                reservationId = bookingId,
+                reservationStatus = "https://schema.org/ReservationConfirmed",
+                underName = new
+                {
+                    type = "Person",
+                    email = identityservice.GetEmail()
+                },
+                reservationFor = new
+                {
+                    type = "Service",
+                    name = SelectedService?.Name,
+                    description = SelectedService?.Description
+                },
+                startTime = SelectedTime?.AppointmentDateTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+                provider = new
+                {
+                    type = "Organization",
+                    name = "HotelVR",
+                    url = GetBaseUrl()
+                }
+            };
+
+            await JSRuntime.InvokeVoidAsync("addPageSchema",
+                System.Text.Json.JsonSerializer.Serialize(bookingSchema));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Booking structured data error: {ex.Message}");
+        }
+    }
+   
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void NavigateToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    private void CloseLoginWarning()
+    {
+        ShowLoginWarning = false;
+    }
+
+}

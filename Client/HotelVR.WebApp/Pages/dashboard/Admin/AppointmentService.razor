@@ -1,0 +1,1289 @@
+﻿@page "/admin/appointmentService"
+@using Application.Models
+@using Application.RequestModels.Service.Create
+@using Application.RequestModels.TimeSlotCommand.Create
+@using Heron.MudCalendar
+@using HotelVR.Common.Infrastructure.Exceptions
+@using HotelVR.WebApp.Infrastructure.Extensions
+@using HotelVR.WebApp.Pages.Component
+@using static Heron.MudCalendar.Attributes.CategoryTypes
+
+@inject IDialogService DialogService
+@inject IAppointmentService appointmentService
+@inject IDialogService dialogService
+@layout AdminLayout
+
+
+
+<div class="d-flex justify-end gap-2 mb-2">
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Secondary"
+               OnClick="@(() => ToggleServiceDrawer())"
+               StartIcon="@Icons.Material.Filled.MedicalServices">
+        Hizmet Yönetimi
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="@(() => ToggleCalendarDrawer())"
+               StartIcon="@Icons.Material.Filled.CalendarMonth">
+        Çoklu Randevu Saati Ekle
+    </MudButton>
+</div>
+
+<MudCalendar Items="_calendarItems"
+             T="CalendarItem"
+             ItemClicked="OnAppointmentClick"
+             DateClicked="OnDayClick">
+</MudCalendar>
+
+<!-- Günlük Randevular Dialogu -->
+<MudDialog @bind-IsVisible="_showDailyDrawer" Options="new DialogOptions { FullWidth = true, MaxWidth = MaxWidth.Small }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@_selectedDate?.ToShortDateString() Günlük Randevular</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ShowAddTimeSlotDialog" Class="mb-2 w-100">
+            Yeni Timeslot Ekle
+        </MudButton>
+
+        <MudList T="AppointmentDto" Clickable="false">
+            @foreach (var item in _dailyAppointments)
+            {
+                <MudListItem T="AppointmentDto">
+                    <div class="d-flex w-100 justify-space-between align-center">
+                        <MudText>@item.AppointmentDate.ToShortTimeString() - @item.ServiceName</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                      Color="Color.Error"
+                                      OnClick="@(() => DeleteTimeSlot(item.Id))">
+                        </MudIconButton>
+                    </div>
+                </MudListItem>
+            }
+        </MudList>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@(() => _showDailyDrawer = false)">Kapat</MudButton>
+    </DialogActions>
+</MudDialog>
+
+<!-- Hizmet Yönetimi Drawer -->
+<MudDrawer @bind-Open="_showServiceDrawer" 
+           Anchor="Anchor.Left" 
+           Elevation="1" 
+           Variant="@DrawerVariant.Temporary" 
+           Width="450px"
+           CloseOnEscape="true"
+           OnClose="@(() => _showServiceDrawer = false)">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">Hizmet Yönetimi</MudText>
+    </MudDrawerHeader>
+    <MudDrawerContent>
+        <MudPaper Elevation="0" Class="pa-4">
+            <!-- Yeni Hizmet Ekleme Formu -->
+            <MudText Typo="Typo.subtitle1" Class="mb-3">Yeni Hizmet Ekle</MudText>
+            
+            <MudTextField @bind-Value="_newServiceName" 
+                          Label="Hizmet Adı" 
+                          Variant="Variant.Outlined" 
+                          Class="mb-3"
+                          HelperText="Hizmet adını giriniz" />
+            
+            <MudTextField @bind-Value="_newServiceDescription" 
+                          Label="Hizmet Açıklaması" 
+                          Variant="Variant.Outlined" 
+                          Lines="3"
+                          Class="mb-3"
+                          HelperText="Hizmet açıklamasını giriniz" />
+            
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       OnClick="AddNewService"
+                       Disabled="@(string.IsNullOrWhiteSpace(_newServiceName) || _isServiceProcessing)"
+                       Class="mb-4">
+                @if (_isServiceProcessing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Ekliniyor...</MudText>
+                }
+                else
+                {
+                    <MudText>Hizmet Ekle</MudText>
+                }
+            </MudButton>
+
+            <MudDivider Class="my-4" />
+
+            <!-- Mevcut Hizmetler Listesi -->
+            <MudText Typo="Typo.subtitle1" Class="mb-3">Mevcut Hizmetler</MudText>
+            
+            @if (_services.Any())
+            {
+                <MudPaper Elevation="0" Style="max-height: 400px; overflow-y: auto;">
+                    <MudList T="ServiceDto" Clickable="false">
+                        @foreach (var service in _services)
+                        {
+                            <MudListItem T="ServiceDto">
+                                <div class="d-flex flex-column w-100">
+                                    <div class="d-flex justify-space-between align-center mb-2">
+                                        <MudText Typo="Typo.body1" Style="font-weight: 500;">@service.Name</MudText>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                      Color="Color.Error"
+                                                      Size="Size.Small"
+                                                      OnClick="@(() => DeleteService(service.Id))">
+                                        </MudIconButton>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(service.Description))
+                                    {
+                                        <MudText Typo="Typo.body2" Class="text-muted">@service.Description</MudText>
+                                    }
+                                </div>
+                            </MudListItem>
+                            <MudDivider />
+                        }
+                    </MudList>
+                </MudPaper>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3">
+                    Henüz hiç hizmet eklenmemiş.
+                </MudAlert>
+            }
+        </MudPaper>
+    </MudDrawerContent>
+</MudDrawer>
+
+<!-- Çoklu Randevu Ekleme Drawer -->
+<MudDrawer @bind-Open="_showCalendarDrawer" 
+           Anchor="Anchor.Right" 
+           Elevation="1" 
+           Variant="@DrawerVariant.Temporary" 
+           Width="500px"
+           CloseOnEscape="true"
+           OnClose="@(() => _showCalendarDrawer = false)">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6">Çoklu Randevu Saati Ayarlama</MudText>
+    </MudDrawerHeader>
+    <MudDrawerContent>
+        <MudPaper Elevation="0" Class="pa-4">
+            <!-- Mini Takvim -->
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Tarih Seçiniz</MudText>
+            <div class="d-flex align-center mb-4">
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousMonth" />
+                <MudText Typo="Typo.h6" Class="flex-grow-1 text-center">
+                    @(new DateTime(calendarDate.Year, calendarDate.Month, 1).ToString("MMMM yyyy"))
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextMonth" />
+            </div>
+
+            <div class="d-flex mb-2">
+                @foreach (var day in DayNames)
+                {
+                    <div class="mini-calendar-day-header">@day</div>
+                }
+            </div>
+
+            @foreach (var row in CalendarRows)
+            {
+                <div class="d-flex mb-2">
+                    @foreach (var date in row)
+                    {
+                        <div class="mini-calendar-day @GetDayClass(date)" @onclick="@(() => SelectCalendarDate(date))">
+                            <div class="mini-calendar-day-number @(IsToday(date) ? "today" : "")">
+                                @date.Day
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <MudDivider Class="my-4" />
+
+            <!-- Mevcut TimeSlotlar -->
+            @if (_selectedDate.HasValue && _selectedDateTimeSlots.Any())
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-2">
+                    @_selectedDate?.ToShortDateString() - Mevcut Boş Saatler (@_selectedDateTimeSlots.Count)
+                </MudText>
+                
+                <MudPaper Elevation="0" Class="pa-2 mb-4" Style="max-height: 150px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <div class="d-flex justify-space-between align-center mb-2">
+
+                        <MudCheckBox T="bool"
+                                     @bind-Checked="_selectAllTimeSlots"
+                                     @onchange="@((ChangeEventArgs e) => OnSelectAllChanged((bool)e.Value))"
+                                     Label="Tümünü Seç"
+                                     Size="Size.Small"
+                                     Color="Color.Primary" />
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Error" 
+                                  Size="Size.Small"
+                                  OnClick="DeleteSelectedTimeSlots"
+                                  Disabled="@(!_selectedTimeSlotIds.Any() || _isDeletingTimeSlots)"
+                                  StartIcon="@Icons.Material.Filled.Delete">
+                            @if (_isDeletingTimeSlots)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <span>Seçilenleri Sil (@_selectedTimeSlotIds.Count)</span>
+                            }
+                        </MudButton>
+                    </div>
+                    
+                    <MudList Dense="true" Clickable="false" T="TimeSlotDto">
+                        @foreach (var slot in _selectedDateTimeSlots.OrderBy(s => s.AppointmentDateTime))
+                        {
+                            var slotId = slot.Id; // Local variable oluştur
+                            <MudListItem T="TimeSlotDto">
+                                <div class="d-flex justify-space-between align-center w-100">
+                                    <div class="d-flex align-center">
+                                        <MudCheckBox T="bool"
+                                                     Checked="@GetTimeSlotSelection(slotId)"
+                                                     CheckedChanged="@((bool value) => SetTimeSlotSelection(slotId, value))"
+                                                     Size="Size.Small"
+                                                     Color="Color.Primary" />
+                                        <MudText Class="ml-2">@slot.AppointmentDateTime.ToShortTimeString()</MudText>
+                                    </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Color="Color.Error"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => DeleteSingleTimeSlot(slotId))">
+                                    </MudIconButton>
+                                </div>
+                            </MudListItem>
+                        }
+
+                    </MudList>
+                </MudPaper>
+                
+                <MudDivider Class="my-4" />
+            }
+
+            <!-- Zaman Aralığı Ayarlama -->
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">Tarih: @(_selectedDate?.ToShortDateString() ?? "Tarih seçilmedi")</MudText>
+            
+            <MudText Typo="Typo.subtitle1" Class="mb-2">Zaman Aralığı Seçiniz</MudText>
+            <div class="d-flex gap-2 mb-4">
+                <MudTimePicker Label="Başlangıç" @bind-Time="_startTime" Class="flex-grow-1" />
+                <MudTimePicker Label="Bitiş" @bind-Time="_endTime" Class="flex-grow-1" />
+            </div>
+
+            <MudSelect T="int" Label="Randevu Süresi (dakika)" @bind-Value="_appointmentDuration" Class="mb-4">
+                <MudSelectItem Value="15">15 dakika</MudSelectItem>
+                <MudSelectItem Value="30">30 dakika</MudSelectItem>
+                <MudSelectItem Value="45">45 dakika</MudSelectItem>
+                <MudSelectItem Value="60">60 dakika</MudSelectItem>
+            </MudSelect>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Secondary"
+                       FullWidth="true"
+                       OnClick="GenerateTimeSlots"
+                       Disabled="@(!CanGenerateTimeSlots())"
+                       Class="mb-4">
+                Önizleme
+            </MudButton>
+
+            @if (_previewTimeSlots.Any())
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Oluşturulacak Randevu Saatleri (@_previewTimeSlots.Count)</MudText>
+                <MudPaper Elevation="0" Class="pa-2 mb-4" Style="max-height: 200px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <MudList Dense="true" Clickable="false" T="DateTime">
+                        @foreach (var slot in _previewTimeSlots)
+                        {
+                            <MudListItem T="DateTime">
+                                <MudText>@slot.ToShortTimeString()</MudText>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </MudPaper>
+                
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           OnClick="AddMultipleTimeSlots"
+                           Disabled="@_isProcessing">
+                    @if (_isProcessing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">İşleniyor...</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Kaydet</MudText>
+                    }
+                </MudButton>
+            }
+        </MudPaper>
+    </MudDrawerContent>
+</MudDrawer>
+@code {
+    private readonly string[] DayNames = { "Pt", "Sa", "Çr", "Pr", "Cu", "Ct", "Pz" };
+    private List<CalendarItem> _calendarItems = new();
+    private List<CalendarItem> _calendarItemsss = new();
+    private List<AppointmentDto> _dailyAppointments = new();
+    private Dictionary<string, Guid> _calendarItemIdMap = new();
+    private CreateServiceCommand createServiceCommand = new();
+    private Dictionary<string, Guid> _calendarItemIdMapp = new();
+
+    // Hizmet yönetimi için değişkenler
+    private bool _showServiceDrawer;
+    private List<ServiceDto> _services = new();
+    private string _newServiceName = "";
+    private string _newServiceDescription = "";
+    private bool _isServiceProcessing = false;
+
+    private DateTime? _selectedDate;
+    private bool _showDailyDrawer;
+    private bool _showTimeSlotDialog;
+    private TimeSpan? _newTimeSlot;
+    private AppointmentDto? detail;
+
+    // Çoklu saat seçimi ve takvim için değişkenler
+    private bool _showCalendarDrawer;
+    private DateTime calendarDate = DateTime.Today;
+    private List<List<DateTime>> CalendarRows = new();
+    private TimeSpan? _startTime;
+    private TimeSpan? _endTime;
+    private int _appointmentDuration = 30;
+    private List<DateTime> _previewTimeSlots = new();
+    private bool _isProcessing = false;
+    private List<CalendarItem>? slottime = new();
+
+    // TimeSlot silme için yeni değişkenler
+    private List<TimeSlotDto> _selectedDateTimeSlots = new();
+    private Dictionary<Guid, bool> _selectedTimeSlotIds = new();
+    private bool _selectAllTimeSlots = false;
+    private bool _isDeletingTimeSlots = false;
+
+    // Loading states eklendi
+    private bool _isLoadingAppointments = false;
+    private bool _isLoadingServices = false;
+    private bool _isLoadingTimeSlots = false;
+    private bool _isLoadingDailyAppointments = false;
+
+    // Cache sistemi
+    private readonly Dictionary<string, CacheItem<List<AppointmentDto>>> _appointmentCache = new();
+    private readonly Dictionary<DateTime, CacheItem<List<AppointmentDto>>> _dailyAppointmentCache = new();
+    private CacheItem<List<ServiceDto>>? _servicesCache;
+    private CacheItem<List<TimeSlotDto>>? _timeSlotsCache;
+    private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5); // 5 dakika cache süresi
+
+    // API çağrı durumları (duplicate çağrıları önlemek için)
+    private readonly Dictionary<string, Task> _ongoingRequests = new();
+
+    public class CacheItem<T>
+    {
+        public T Data { get; set; }
+        public DateTime CachedAt { get; set; }
+        public bool IsExpired(TimeSpan expiration) => DateTime.Now - CachedAt > expiration;
+
+        public CacheItem(T data)
+        {
+            Data = data;
+            CachedAt = DateTime.Now;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Paralel yükleme ile performans artışı
+        var loadingTasks = new List<Task>
+        {
+            LoadAppointmentsWithLoading(),
+            LoadTimeSlots(),
+            LoadServicesWithLoading()
+        };
+
+        await Task.WhenAll(loadingTasks);
+
+        GenerateCalendar();
+
+        // Başlangıç değerleri
+        _startTime = new TimeSpan(9, 0, 0);
+        _endTime = new TimeSpan(17, 0, 0);
+    }
+
+    // Loading wrapper metodları
+    private async Task LoadAppointmentsWithLoading()
+    {
+        _isLoadingAppointments = true;
+        StateHasChanged();
+        try
+        {
+            await LoadAppointments();
+        }
+        finally
+        {
+            _isLoadingAppointments = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadServicesWithLoading()
+    {
+        _isLoadingServices = true;
+        StateHasChanged();
+        try
+        {
+            await LoadServices();
+        }
+        finally
+        {
+            _isLoadingServices = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnSelectAllChanged(bool value)
+    {
+        _selectAllTimeSlots = value;
+
+        // Tüm time slot'ları seç/seçme
+        var keysToUpdate = _selectedTimeSlotIds.Keys.ToList();
+        foreach (var key in keysToUpdate)
+        {
+            _selectedTimeSlotIds[key] = value;
+        }
+       
+    }
+
+    private async Task addServiceRezervation()
+    {
+        var service = await appointmentService.CreateService(createServiceCommand);
+    }
+
+    private void deleteService()
+    {
+        var deleteService = appointmentService.DeleteService(createServiceCommand.Id);
+    }
+
+    private bool GetTimeSlotSelection(Guid slotId)
+    {
+        return _selectedTimeSlotIds.ContainsKey(slotId) && _selectedTimeSlotIds[slotId];
+    }
+
+    private void SetTimeSlotSelection(Guid slotId, bool value)
+    {
+        if (_selectedTimeSlotIds.ContainsKey(slotId))
+        {
+            _selectedTimeSlotIds[slotId] = value;
+        }
+        else
+        {
+            _selectedTimeSlotIds.Add(slotId, value);
+        }
+
+        // Tümünü seç checkbox'ını güncelle
+        _selectAllTimeSlots = _selectedTimeSlotIds.Values.All(v => v) && _selectedTimeSlotIds.Any();
+        // StateHasChanged() kaldırıldı - UI otomatik güncellenecek
+    }
+
+    private async Task LoadAppointments(bool forceRefresh = false)
+    {
+        const string cacheKey = "all_appointments";
+
+        // Cache kontrolü
+        if (!forceRefresh &&
+            _appointmentCache.ContainsKey(cacheKey) &&
+            !_appointmentCache[cacheKey].IsExpired(_cacheExpiration))
+        {
+            var cachedData = _appointmentCache[cacheKey].Data;
+            ProcessAppointmentsData(cachedData);
+            return;
+        }
+
+        // Duplicate çağrı kontrolü
+        if (_ongoingRequests.ContainsKey(cacheKey))
+        {
+            await _ongoingRequests[cacheKey];
+            return;
+        }
+
+        try
+        {
+            var task = appointmentService.GetAllAppointmentsAsync();
+            _ongoingRequests[cacheKey] = task;
+
+            var appointments = await task;
+
+            // Cache'e kaydet
+            _appointmentCache[cacheKey] = new CacheItem<List<AppointmentDto>>(appointments);
+
+            ProcessAppointmentsData(appointments);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Randevular yüklenirken bir hata oluştu", ex);
+        }
+        finally
+        {
+            _ongoingRequests.Remove(cacheKey);
+        }
+    }
+
+    private void ProcessAppointmentsData(List<AppointmentDto> appointments)
+    {
+        _calendarItemIdMap.Clear();
+        _calendarItems = new List<CalendarItem>();
+
+        foreach (var a in appointments)
+        {
+            var item = new CalendarItem
+                {
+                    Start = a.AppointmentDate,
+                    End = a.AppointmentDate.AddMinutes(30),
+                    Text = $"{a.AppointmentDate.ToShortTimeString()} - {a.ServiceName}"
+                };
+
+            _calendarItemIdMap[item.Text] = a.Id;
+            _calendarItems.Add(item);
+        }
+    }
+
+    private async Task OnDayClick(DateTime date)
+    {
+        _selectedDate = date;
+        await LoadDailyAppointments(date);
+        _showDailyDrawer = true;
+    }
+
+    private async Task LoadDailyAppointments(DateTime date, bool forceRefresh = false)
+    {
+        if (_isLoadingDailyAppointments) return; // Çoklu çağrı engelleme
+
+        // Cache kontrolü
+        if (!forceRefresh &&
+            _dailyAppointmentCache.ContainsKey(date.Date) &&
+            !_dailyAppointmentCache[date.Date].IsExpired(_cacheExpiration))
+        {
+            _dailyAppointments = _dailyAppointmentCache[date.Date].Data;
+            return;
+        }
+
+        var cacheKey = $"daily_appointments_{date:yyyyMMdd}";
+
+        // Duplicate çağrı kontrolü
+        if (_ongoingRequests.ContainsKey(cacheKey))
+        {
+            await _ongoingRequests[cacheKey];
+            return;
+        }
+
+        _isLoadingDailyAppointments = true;
+        StateHasChanged();
+
+        try
+        {
+            var task = appointmentService.GetAppointmentsByDateAsync(date);
+            _ongoingRequests[cacheKey] = task;
+
+            _dailyAppointments = await task;
+
+            // Cache'e kaydet
+            _dailyAppointmentCache[date.Date] = new CacheItem<List<AppointmentDto>>(_dailyAppointments);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Günlük randevular yüklenirken bir hata oluştu", ex);
+            _dailyAppointments = new List<AppointmentDto>();
+        }
+        finally
+        {
+            _isLoadingDailyAppointments = false;
+            _ongoingRequests.Remove(cacheKey);
+            StateHasChanged();
+        }
+    }
+
+    private void ShowAddTimeSlotDialog()
+    {
+        _showTimeSlotDialog = true;
+        _newTimeSlot = null;
+    }
+
+    private async Task DeleteTimeSlot(Guid id)
+    {
+        try
+        {
+            var confirmation = await dialogService.ShowMessageBox(
+                "Onay",
+                "Bu randevu saatini silmek istediğinize emin misiniz?",
+                yesText: "Evet",
+                noText: "Hayır");
+
+            if (confirmation == true)
+            {
+                await appointmentService.DeleteAsync(id);
+                // Birleştirilmiş yenileme
+                await RefreshAppointmentData();
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Randevu silinirken bir hata oluştu", ex);
+        }
+    }
+
+    // Birleştirilmiş yenileme metodu - cache'i temizleyerek zorla yenileme
+    private async Task RefreshAppointmentData()
+    {
+        // Cache'leri temizle
+        InvalidateAppointmentCaches();
+
+        var tasks = new List<Task> { LoadAppointments(forceRefresh: true) };
+
+        if (_selectedDate.HasValue)
+        {
+            tasks.Add(LoadDailyAppointments(_selectedDate.Value, forceRefresh: true));
+        }
+
+        await Task.WhenAll(tasks);
+        StateHasChanged();
+    }
+
+    // Cache invalidation metodları
+    private void InvalidateAppointmentCaches()
+    {
+        _appointmentCache.Clear();
+        _dailyAppointmentCache.Clear();
+    }
+
+    private void InvalidateServiceCache()
+    {
+        _servicesCache = null;
+    }
+
+    private void InvalidateTimeSlotCache()
+    {
+        _timeSlotsCache = null;
+    }
+
+    private void InvalidateAllCaches()
+    {
+        InvalidateAppointmentCaches();
+        InvalidateServiceCache();
+        InvalidateTimeSlotCache();
+    }
+
+    private async Task OnAppointmentClick(CalendarItem item)
+    {
+        if (_calendarItemIdMap.TryGetValue(item.Text, out var appointmentId))
+        {
+            try
+            {
+                detail = await appointmentService.GetByIdAppointmentsDetail(appointmentId);
+
+                if (detail != null)
+                {
+                    var parameters = new DialogParameters
+                        {
+                            ["Detail"] = detail,
+                            ["OnDeleted"] = EventCallback.Factory.Create(this, RefreshAppointmentData) // Birleştirilmiş yenileme kullan
+                        };
+
+                    var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+                    dialogService.Show<AppointmentDetailDialog>("Randevu Detayı", parameters, options);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorMessage("Randevu detayı yüklenirken bir hata oluştu", ex);
+            }
+        }
+    }
+
+    private async Task LoadServices(bool forceRefresh = false)
+    {
+        // Cache kontrolü
+        if (!forceRefresh &&
+            _servicesCache != null &&
+            !_servicesCache.IsExpired(_cacheExpiration))
+        {
+            _services = _servicesCache.Data;
+            return;
+        }
+
+        const string cacheKey = "services";
+
+        // Duplicate çağrı kontrolü
+        if (_ongoingRequests.ContainsKey(cacheKey))
+        {
+            await _ongoingRequests[cacheKey];
+            return;
+        }
+
+        try
+        {
+            var task = appointmentService.GetServicesAsync();
+            _ongoingRequests[cacheKey] = task;
+
+            _services = await task;
+
+            // Cache'e kaydet
+            _servicesCache = new CacheItem<List<ServiceDto>>(_services);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Hizmetler yüklenirken bir hata oluştu", ex);
+            _services = new List<ServiceDto>();
+        }
+        finally
+        {
+            _ongoingRequests.Remove(cacheKey);
+        }
+    }
+
+    private void ToggleServiceDrawer()
+    {
+        _showServiceDrawer = !_showServiceDrawer;
+        if (_showServiceDrawer)
+        {
+            _newServiceName = "";
+            _newServiceDescription = "";
+        }
+    }
+
+    private async Task AddNewService()
+    {
+        if (string.IsNullOrWhiteSpace(_newServiceName))
+            return;
+
+        if (_isServiceProcessing) return; // Çoklu tıklama engelleme
+
+        try
+        {
+            _isServiceProcessing = true;
+            StateHasChanged();
+
+            var command = new CreateServiceCommand
+                {
+                    Name = _newServiceName.Trim(),
+                    Description = _newServiceDescription?.Trim() ?? ""
+                };
+
+            var result = await appointmentService.CreateService(command);
+
+            if (result != null)
+            {
+                // Service cache'ini invalidate et ve yenile
+                InvalidateServiceCache();
+                await LoadServices(forceRefresh: true);
+
+                _newServiceName = "";
+                _newServiceDescription = "";
+
+                await dialogService.ShowMessageBox("Başarılı", "Hizmet başarıyla eklendi.");
+            }
+        }
+        catch (DataBaseValidationException ex)
+        {
+            await dialogService.ShowMessageBox("Uyarı", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Hizmet eklenirken bir hata oluştu", ex);
+        }
+        finally
+        {
+            _isServiceProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteService(Guid serviceId)
+    {
+        try
+        {
+            var confirmation = await dialogService.ShowMessageBox(
+                "Onay",
+                "Bu hizmeti silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+                yesText: "Evet",
+                noText: "Hayır");
+
+            if (confirmation == true)
+            {
+                await appointmentService.DeleteService(serviceId);
+
+                // Service cache'ini invalidate et ve yenile
+                InvalidateServiceCache();
+                await LoadServices(forceRefresh: true);
+
+                await dialogService.ShowMessageBox("Başarılı", "Hizmet başarıyla silindi.");
+            }
+        }
+        catch (DataBaseValidationException ex)
+        {
+            await dialogService.ShowMessageBox("Uyarı", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Hizmet silinirken bir hata oluştu", ex);
+        }
+    }
+
+    private void GenerateCalendar()
+    {
+        var firstDay = new DateTime(calendarDate.Year, calendarDate.Month, 1);
+
+        // DayOfWeek, Pazar=0 olarak başlar, biz Pazartesi=0 istiyoruz
+        int startOffset = ((int)firstDay.DayOfWeek + 6) % 7;
+
+        var lastDay = firstDay.AddMonths(1).AddDays(-1);
+        var calendarDays = new List<DateTime>();
+
+        // Önceki ayın günleri
+        for (int i = startOffset; i > 0; i--)
+            calendarDays.Add(firstDay.AddDays(-i));
+
+        // Bu ayın günleri
+        for (int i = 0; i < lastDay.Day; i++)
+            calendarDays.Add(firstDay.AddDays(i));
+
+        // Sonraki ayın günleri
+        int remaining = 7 - (calendarDays.Count % 7);
+        if (remaining < 7)
+            for (int i = 1; i <= remaining; i++)
+                calendarDays.Add(lastDay.AddDays(i));
+
+        // Haftalar halinde grupla
+        CalendarRows = calendarDays
+            .Select((d, i) => new { d, i })
+            .GroupBy(x => x.i / 7)
+            .Select(g => g.Select(x => x.d).ToList())
+            .ToList();
+    }
+
+    private void PreviousMonth()
+    {
+        // Geçmiş aylara gitmeyi engelle
+        if (calendarDate.Year < DateTime.Today.Year ||
+            (calendarDate.Year == DateTime.Today.Year && calendarDate.Month <= DateTime.Today.Month))
+            return;
+
+        calendarDate = calendarDate.AddMonths(-1);
+        GenerateCalendar();
+    }
+
+    private void NextMonth()
+    {
+        calendarDate = calendarDate.AddMonths(1);
+        GenerateCalendar();
+        // StateHasChanged() kaldırıldı - gereksiz
+    }
+
+    private string GetDayClass(DateTime date)
+    {
+        if (date.Month != calendarDate.Month) return "other-month-day";
+        if (date < DateTime.Today) return "disabled-day";
+        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) return "weekend-day";
+        return _selectedDate?.Date == date.Date ? "selected-day" : "available-day";
+    }
+
+    private bool IsToday(DateTime date) => date.Date == DateTime.Today;
+
+    private async Task SelectCalendarDate(DateTime date)
+    {
+        if (date < DateTime.Today || date.Month != calendarDate.Month)
+            return;
+
+        _selectedDate = date;
+        _previewTimeSlots.Clear();
+
+        // Paralel yükleme
+        var tasks = new List<Task>
+        {
+            LoadTimeSlots(),
+            LoadSelectedDateTimeSlots()
+        };
+
+        await Task.WhenAll(tasks);
+        StateHasChanged();
+    }
+
+    private async Task ToggleCalendarDrawer()
+    {
+        _showCalendarDrawer = !_showCalendarDrawer;
+        if (_showCalendarDrawer)
+        {
+            // Drawer açıldığında bugünü seç
+            _selectedDate = DateTime.Today;
+            calendarDate = DateTime.Today;
+            GenerateCalendar();
+
+            // Paralel yükleme
+            var tasks = new List<Task>
+            {
+                LoadTimeSlots(),
+                LoadSelectedDateTimeSlots()
+            };
+
+            await Task.WhenAll(tasks);
+            _previewTimeSlots.Clear();
+        }
+    }
+
+    private bool CanGenerateTimeSlots()
+    {
+        return _selectedDate.HasValue && _startTime.HasValue && _endTime.HasValue;
+    }
+
+    // LoadTimeSlots yerine daha net isimle LoadTimeSlots
+    private async Task LoadTimeSlots(bool forceRefresh = false)
+    {
+        if (_isLoadingTimeSlots) return; // Çoklu çağrı engelleme
+
+        // Cache kontrolü
+        if (!forceRefresh &&
+            _timeSlotsCache != null &&
+            !_timeSlotsCache.IsExpired(_cacheExpiration))
+        {
+            ProcessTimeSlotsData(_timeSlotsCache.Data);
+            return;
+        }
+
+        const string cacheKey = "time_slots";
+
+        // Duplicate çağrı kontrolü
+        if (_ongoingRequests.ContainsKey(cacheKey))
+        {
+            await _ongoingRequests[cacheKey];
+            return;
+        }
+
+        _isLoadingTimeSlots = true;
+
+        try
+        {
+            var task = appointmentService.GetAllTimeSlot();
+            _ongoingRequests[cacheKey] = task;
+
+            var timeSlots = await task;
+
+            // Cache'e kaydet
+            _timeSlotsCache = new CacheItem<List<TimeSlotDto>>(timeSlots);
+
+            ProcessTimeSlotsData(timeSlots);
+        }
+        catch (Exception ex)
+        {
+            await dialogService.ShowMessageBox("Hata", $"Zaman dilimleri yüklenirken hata oluştu: {ex.Message}");
+            slottime = new List<CalendarItem>();
+        }
+        finally
+        {
+            _isLoadingTimeSlots = false;
+            _ongoingRequests.Remove(cacheKey);
+        }
+    }
+
+    private void ProcessTimeSlotsData(List<TimeSlotDto> timeSlots)
+    {
+        _calendarItemIdMapp.Clear();
+        _calendarItemsss = new List<CalendarItem>();
+
+        foreach (var a in timeSlots)
+        {
+            var item = new CalendarItem
+                {
+                    Start = a.AppointmentDateTime,
+                    End = a.AppointmentDateTime.AddMinutes(30),
+                };
+
+            _calendarItemIdMapp[item.Text] = a.Id;
+            _calendarItemsss.Add(item);
+        }
+    }
+
+    private async Task GenerateTimeSlots()
+    {
+        if (!CanGenerateTimeSlots())
+            return;
+
+        _previewTimeSlots.Clear();
+
+        var targetDate = _selectedDate!.Value.Date;
+        var currentTime = _startTime!.Value;
+        var endTime = _endTime!.Value;
+
+        var availableSlotTimes = _calendarItemsss
+            .Where(c => c.Start.Date == _selectedDate.Value.Date)
+            .Select(c => c.Start.TimeOfDay)
+            .ToList();
+
+        // Doğrudan _calendarItems'dan seçilen tarihe ait randevuları filtrele
+        var existingTimes = _calendarItems
+            .Where(c => c.Start.Date == _selectedDate.Value.Date)
+            .Select(c => c.Start.TimeOfDay)
+            .ToList();
+
+        // Bitiş saati başlangıç saatinden küçükse, düzelt
+        if (endTime <= currentTime)
+        {
+            await dialogService.ShowMessageBox("Uyarı", "Bitiş saati başlangıç saatinden sonra olmalıdır.");
+            return;
+        }
+
+        while (currentTime < endTime)
+        {
+            // Mevcut randevularla çakışma kontrolü - toleranslı karşılaştırma
+            bool timeExistsInAppointments = existingTimes.Any(t => Math.Abs((t - currentTime).TotalMinutes) < 1);
+            // Sistemde kayıtlı boş saatlerle çakışma kontrolü
+            bool timeExistsInAvailableSlots = availableSlotTimes.Any(t => Math.Abs((t - currentTime).TotalMinutes) < 1);
+
+            if (timeExistsInAppointments || timeExistsInAvailableSlots)
+            {
+                currentTime = currentTime.Add(TimeSpan.FromMinutes(_appointmentDuration));
+                continue;
+            }
+            _previewTimeSlots.Add(targetDate.Add(currentTime));
+            currentTime = currentTime.Add(TimeSpan.FromMinutes(_appointmentDuration));
+
+            // Son slot eklenebilir mi kontrol et
+            if (currentTime > endTime)
+                break;
+        }
+
+        if (_previewTimeSlots.Count == 0)
+        {
+            await dialogService.ShowMessageBox("Bilgi", "Seçilen zaman aralığı ve randevu süresiyle oluşturulabilecek bir slot bulunamadı.");
+        }
+        else
+        {
+            Console.WriteLine($"Toplam {_previewTimeSlots.Count} zaman dilimi oluşturuldu.");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task AddMultipleTimeSlots()
+    {
+        if (_previewTimeSlots.Count == 0)
+            return;
+
+        if (_isProcessing) return; // Çoklu tıklama engelleme
+
+        try
+        {
+            _isProcessing = true;
+            StateHasChanged();
+
+            int successCount = 0;
+            int existingCount = 0;
+
+            foreach (var slotTime in _previewTimeSlots)
+            {
+                // API'ye ekleme isteği gönder
+                var result = await appointmentService.AddTimeSlotAsync(slotTime);
+
+                // API yanıtına göre işlem sonucunu kaydet
+                if (result)
+                    successCount++;
+                else
+                    existingCount++;
+            }
+
+            string message = $"{successCount} randevu saati başarıyla eklendi.";
+            if (existingCount > 0)
+                message += $" {existingCount} randevu saati zaten mevcut olduğu için eklenmedi.";
+
+            await dialogService.ShowMessageBox("İşlem Sonucu", message);
+
+            // TimeSlot cache'ini invalidate et
+            InvalidateTimeSlotCache();
+
+            _showCalendarDrawer = false;
+            _previewTimeSlots.Clear();
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Randevu saatleri eklenirken bir hata oluştu", ex);
+        }
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteSingleTimeSlot(Guid timeSlotId)
+    {
+        try
+        {
+            var confirmation = await dialogService.ShowMessageBox(
+                "Onay",
+                "Bu zaman dilimini silmek istediğinize emin misiniz?",
+                yesText: "Evet",
+                noText: "Hayır");
+
+            if (confirmation == true)
+            {
+                await appointmentService.DeleteTimeSlot(timeSlotId);
+
+                // Cache'leri invalidate et
+                InvalidateTimeSlotCache();
+                InvalidateAppointmentCaches();
+
+                // Birleştirilmiş yenileme
+                var tasks = new List<Task>
+                {
+                    LoadSelectedDateTimeSlots(forceRefresh: true),
+                    LoadAppointments(forceRefresh: true)
+                };
+
+                await Task.WhenAll(tasks);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Zaman dilimi silinirken bir hata oluştu", ex);
+        }
+    }
+
+    private async Task LoadSelectedDateTimeSlots(bool forceRefresh = false)
+    {
+        if (!_selectedDate.HasValue)
+        {
+            _selectedDateTimeSlots.Clear();
+            _selectedTimeSlotIds.Clear();
+            _selectAllTimeSlots = false;
+            return;
+        }
+
+        try
+        {
+            // TimeSlots cache'ini kullan
+            List<TimeSlotDto> allTimeSlots;
+
+            if (!forceRefresh &&
+                _timeSlotsCache != null &&
+                !_timeSlotsCache.IsExpired(_cacheExpiration))
+            {
+                allTimeSlots = _timeSlotsCache.Data;
+            }
+            else
+            {
+                allTimeSlots = await appointmentService.GetAllTimeSlot();
+                _timeSlotsCache = new CacheItem<List<TimeSlotDto>>(allTimeSlots);
+            }
+
+            if (allTimeSlots == null)
+            {
+                _selectedDateTimeSlots = new List<TimeSlotDto>();
+                _selectedTimeSlotIds = new Dictionary<Guid, bool>();
+                _selectAllTimeSlots = false;
+                return;
+            }
+
+            _selectedDateTimeSlots = allTimeSlots
+                .Where(ts => ts?.AppointmentDateTime.Date == _selectedDate.Value.Date)
+                .ToList();
+
+            // Dictionary'yi temizle ve yeniden oluştur
+            _selectedTimeSlotIds.Clear();
+
+            foreach (var slot in _selectedDateTimeSlots)
+            {
+                if (slot?.Id != null && slot.Id != Guid.Empty)
+                {
+                    _selectedTimeSlotIds.Add(slot.Id, false);
+                }
+            }
+
+            _selectAllTimeSlots = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Hata: {ex.Message}");
+            _selectedDateTimeSlots = new List<TimeSlotDto>();
+            _selectedTimeSlotIds = new Dictionary<Guid, bool>();
+            _selectAllTimeSlots = false;
+
+            await ShowErrorMessage("Seçilen tarihe ait zaman dilimleri yüklenirken bir hata oluştu", ex);
+        }
+    }
+    private async Task DeleteSelectedTimeSlots()
+    {
+        var selectedIds = _selectedTimeSlotIds.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+
+        if (!selectedIds.Any())
+        {
+            await dialogService.ShowMessageBox("Uyarı", "Lütfen silmek istediğiniz zaman dilimlerini seçiniz.");
+            return;
+        }
+
+        if (_isDeletingTimeSlots) return; // Çoklu tıklama engelleme
+
+        try
+        {
+            var confirmation = await dialogService.ShowMessageBox(
+                "Onay",
+                $"{selectedIds.Count} adet zaman dilimini silmek istediğinize emin misiniz?",
+                yesText: "Evet",
+                noText: "Hayır");
+
+            if (confirmation == true)
+            {
+                _isDeletingTimeSlots = true;
+                StateHasChanged();
+
+                int successCount = 0;
+                int errorCount = 0;
+
+                foreach (var id in selectedIds)
+                {
+                    try
+                    {
+                        await appointmentService.DeleteTimeSlot(id);
+                        successCount++;
+                    }
+                    catch
+                    {
+                        errorCount++;
+                    }
+                }
+
+                // Cache'leri invalidate et
+                InvalidateTimeSlotCache();
+                InvalidateAppointmentCaches();
+
+                // Birleştirilmiş yenileme
+                var tasks = new List<Task>
+                {
+                    LoadSelectedDateTimeSlots(forceRefresh: true),
+                    LoadAppointments(forceRefresh: true)
+                };
+
+                await Task.WhenAll(tasks);
+
+                // Sonuç mesajı
+                string resultMessage = $"{successCount} zaman dilimi başarıyla silindi.";
+                if (errorCount > 0)
+                {
+                    resultMessage += $" {errorCount} zaman dilimi silinemedi.";
+                }
+
+                await DialogService.ShowMessageBox("İşlem Sonucu", resultMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowErrorMessage("Zaman dilimleri silinirken bir hata oluştu", ex);
+        }
+        finally
+        {
+            _isDeletingTimeSlots = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShowErrorMessage(string message, Exception ex)
+    {
+        await DialogService.ShowMessageBox("Hata", $"{message}: {ex.Message}");
+    }
+
+    }

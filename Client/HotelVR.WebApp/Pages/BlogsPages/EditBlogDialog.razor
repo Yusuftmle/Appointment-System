@@ -1,0 +1,168 @@
+﻿@page "/admin/blogs/edit/{Slug}"
+@inject IBlogPostService BlogService
+@inject UploadService uploadService
+@inject NavigationManager Nav
+@layout AdminLayout
+@using Application.RequestModels.BlogPost.UpdateBlog
+@using Application.Models
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+
+
+<MudGrid Class="mt-4">
+    <MudItem xs="12" md="8">
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h5" Class="mb-3 text-primary">Blog Düzenle</MudText>
+
+            <MudTextField @bind-Value="model.Title" Label="Başlık" Required="true" />
+
+            <!-- TinyMCE Editor -->
+            <TinyMCE.Blazor.Editor @bind-Value="model.Content"
+                                   Conf="tinyMceConfig"
+                                   Id="blogEditor"
+                                   ClassName="border rounded"
+                                   ApiKey="5r7av63pfms7hckbu5s9cymiym8wve9fgxgwl3cpb6dkz4pa" />
+
+            <MudTextField @bind-Value="model.Summary" Label="Özet" Lines="3" Class="mt-3" />
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="4">
+        <MudPaper Class="p-4">
+            <MudText Typo="Typo.h6" Class="mb-2">Etiket</MudText>
+            <MudSelect T="Guid" @bind-Value="model.BlogTagId" Label="Etiket Seç" Required="true">
+                @foreach (var tag in tags)
+                {
+                    <MudSelectItem Value="@tag.Id">@tag.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudDivider Class="my-3" />
+
+            <MudText Typo="Typo.h6" Class="mb-2">Kapak Görsel</MudText>
+
+            <div id="coverDropzone" class="dropzone dz-clickable mb-3">
+                <div class="dz-message">Resmi buraya bırakın veya seçin</div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(model.CoverImageUrl))
+            {
+                <MudPaper Class="mt-3 p-2" Elevation="0">
+                    <img src="@model.CoverImageUrl" style="max-height:200px; width:100%" />
+                    <MudButton Variant="Variant.Text" Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               OnClick="RemoveImage"
+                               Class="mt-2 w-100">Kaldır</MudButton>
+                </MudPaper>
+            }
+
+            <MudDivider Class="my-3" />
+            <MudText Typo="Typo.h6">Anahtar Kelimeler</MudText>
+            <MudTextField @bind-Value="model.Keywords" Placeholder="kelime1, kelime2" />
+
+            <MudDivider Class="my-3" />
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save" Class="w-100">
+                Güncelle
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+
+    private UpdateBlogPostComamnd model = new();
+
+
+    private List<BlogTagDto> tags = new();
+    private DotNetObjectReference<EditBlogDialog>? dotNetRef;
+
+    private string? _existingImageUrl;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("initializeCoverDropzone", dotNetRef);
+
+        }
+    }
+
+    [JSInvokable]
+    public void OnCoverUploaded(string imageUrl)
+    {
+        if (!string.IsNullOrWhiteSpace(imageUrl))
+        {
+            model.CoverImageUrl = imageUrl;
+            StateHasChanged();
+        }
+    }
+
+    // TinyMCE Konfigürasyonu
+    private Dictionary<string, object> tinyMceConfig = new Dictionary<string, object>
+    {
+        { "plugins", "preview paste searchreplace autolink autosave code visualblocks visualchars image link media table codesample hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount textpattern noneditable help charmap emoticons" },
+        { "toolbar", "undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | preview save print | insertfile image media link anchor codesample | ltr rtl | blocks fontfamily fontsize| addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat" },
+        { "height", 500 },
+        { "images_upload_url", "blob:https://www.tiny.cloud" },
+        { "branding", false },
+        { "menubar", false },
+        { "apiKey", "5r7av63pFms7hclbUs59cym1ym8wve9fqxgw13cpb6dkz4pa" }
+    };
+
+    private async Task<string?> GetImageFromApi()
+    {
+        var existing = await BlogService.GetBySlugAsync(Slug);
+        // API'den resim URL'sini çek
+        return existing.CoverImageUrl;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        tags = await BlogService.GetAllBlogTag();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var existing = await BlogService.GetBySlugAsync(Slug);
+
+        model = new UpdateBlogPostComamnd
+            {
+                Id = existing.Id,
+                Title = existing.Title,
+                Summary = existing.Summary,
+                Content = existing.Content,
+                CoverImageUrl = existing.CoverImageUrl,
+                BlogTagId = existing.BlogTagId,
+                Keywords = existing.Keywords
+            };
+
+       
+    }
+
+  
+
+
+    private void RemoveImage()
+    {
+        model.CoverImageUrl = string.Empty;
+        StateHasChanged();
+    }
+
+    @inject ISnackbar Snackbar
+
+    private void Save()
+    {
+        var result =  BlogService.UpdateAsync(model);
+        if (result!=null)
+        {
+            Snackbar.Add("Blog başarıyla güncellendi.", Severity.Success);
+            Nav.NavigateTo("/admin/blogs",forceLoad: true);
+        }
+        else
+        {
+            Snackbar.Add("Blog güncellenirken bir hata oluştu.", Severity.Error);
+        }
+    }
+
+}

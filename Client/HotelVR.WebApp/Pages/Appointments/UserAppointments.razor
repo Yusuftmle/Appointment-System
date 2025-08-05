@@ -1,0 +1,426 @@
+﻿@page "/randevularim"
+@inject NavigationManager Navigation
+@inject IAppointmentService AppointmentService
+@inject IEmailService emailService
+@layout MainLayout
+@using Application.Models
+@using Application.Models.Page
+@using Domain.Enums
+
+<div class="appointments-page">
+    <div class="page-header">
+        <div>
+            <h1>Randevularım</h1>
+            <p class="page-subtitle">Yaklaşan ve geçmiş randevu bilgileriniz</p>
+        </div>
+        <button class="btn btn-primary" @onclick="goToRezerv">
+            <i class="fas fa-plus-circle"></i> Yeni Randevu Al
+        </button>
+    </div>
+
+   <div class="appointments-container">
+        <!-- Yaklaşan Randevular -->
+        <section class="appointment-section">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-check"></i> Yaklaşan Randevular</h2>
+                <span class="badge count-badge">@upcomingAppointments?.Count</span>
+            </div>
+
+            @if (upcomingAppointments == null)
+            {
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Randevular yükleniyor...</p>
+                </div>
+            }
+            else if (!upcomingAppointments.Any())
+            {
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>Yaklaşan randevunuz yok</h3>
+                    <p>Yeni randevu oluşturmak için butona tıklayın</p>
+                    <button class="btn btn-primary" @onclick="goToRezerv">
+                        Randevu Oluştur
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="appointments-grid">
+                    @foreach (var appointment in upcomingAppointments)
+                    {
+                        <div class="appointment-card upcoming">
+                            <div class="card-header">
+                                <h3>@appointment.ServiceName</h3>
+                                <span class="status-badge @(appointment.IsConfirmed ? "confirmed" : "pending" )">
+                                    @(appointment.IsConfirmed ? "Onaylandı" : "Onay Bekliyor")
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="appointment-time">
+                                    <i class="far fa-clock"></i>
+                                    <span>@appointment.AppointmentDate.ToString("dd MMMM yyyy") - @appointment.AppointmentDate.ToShortTimeString()</span>
+                                </div>
+                                <div class="appointment-time">
+                                    <i class="far fa-clock"></i>
+                                    <span>@appointment.appointmentType - @appointment.appointmentType</span>
+                                </div>
+                                <div class="appointment-notes">
+                                    <i class="far fa-comment-alt"></i>
+                                    <span>@(string.IsNullOrEmpty(appointment.UserName) ? "Not eklenmemiş" : appointment.UserName)</span>
+                                </div>
+                                 <div class="appointment-notes">
+                                    <i class="far fa-comment-alt"></i>
+                                    <span>@(string.IsNullOrEmpty(appointment.UserName) ? "Not eklenmemiş" : appointment.UserName)</span>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-outline" @onclick="() => ViewDetails(appointment.Id)">
+                                    <i class="far fa-eye"></i> Detaylar
+                                </button>
+                                <button class="btn btn-danger" @onclick="() => CancelAppointment(appointment.Id)">
+                                    <i class="fas fa-times"></i> İptal Et
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <!-- Geçmiş Randevular - Değişiklik yok -->
+        <section class="appointment-section">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Geçmiş Randevular</h2>
+                <span class="badge count-badge">@(pastAppointmentsPagedData?.PageInfo?.totalRowCount ?? 0)</span>
+            </div>
+
+            @if (pastAppointmentsPagedData == null)
+            {
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Geçmiş randevular yükleniyor...</p>
+                </div>
+            }
+            else if (!pastAppointmentsPagedData.Results.Any())
+            {
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>Geçmiş randevunuz bulunmamaktadır</h3>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Hizmet</th>
+                                <th>Tarih</th>
+                                <th>Saat</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                                <th>Randevu Türü</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var appointment in pastAppointmentsPagedData.Results)
+                            {
+                                <tr>
+                                    <td>@appointment.ServiceName</td>
+                                    <td>@appointment.AppointmentDate.ToString("dd MMM yyyy")</td>
+                                    <td>@appointment.AppointmentDate.ToShortTimeString()</td>
+                                    <td>@appointment.appointmentType</td>
+                                    <td>
+                                        <span class="status-badge @GetStatusClass(appointment.ReservationStatus)">
+                                            @GetStatusText(appointment.ReservationStatus)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn-icon" @onclick="() => ViewDetails(appointment.Id)" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        @if (appointment.ReservationStatus == ReservationStatus.Confirmed)
+                                        {
+                                            <button class="btn-icon" @onclick="() => DownloadReport(appointment.Id)" title="Rapor İndir">
+                                                <i class="fas fa-file-download"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination - Değişiklik yok -->
+                @if (pastAppointmentsPagedData.PageInfo.totalPageCount > 1)
+                {
+                    <div class="pagination-container">
+                        <nav class="pagination-nav">
+                            <div class="pagination-info">
+                                <span>Toplam @pastAppointmentsPagedData.PageInfo.totalRowCount kayıt - Sayfa @pastAppointmentsPagedData.PageInfo.currentPage / @pastAppointmentsPagedData.PageInfo.totalPageCount</span>
+                            </div>
+
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline btn-sm"
+                                        @onclick="() => LoadPastAppointments(1)"
+                                        disabled="@(pastAppointmentsPagedData.PageInfo.currentPage == 1)">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+
+                                <button class="btn btn-outline btn-sm"
+                                        @onclick="() => LoadPastAppointments(pastAppointmentsPagedData.PageInfo.currentPage - 1)"
+                                        disabled="@(pastAppointmentsPagedData.PageInfo.currentPage == 1)">
+                                    <i class="fas fa-angle-left"></i>
+                                </button>
+
+                                @{
+                                    int start = Math.Max(1, pastAppointmentsPagedData.PageInfo.currentPage - 2);
+                                    int end = Math.Min(pastAppointmentsPagedData.PageInfo.totalPageCount, pastAppointmentsPagedData.PageInfo.currentPage + 2);
+                                }
+
+                                @for (int i = start; i <= end; i++)
+                                {
+                                    int pageNumber = i;
+                                    <button class="btn @(pageNumber == pastAppointmentsPagedData.PageInfo.currentPage ? "btn-primary" : "btn-outline") btn-sm"
+                                            @onclick="() => LoadPastAppointments(pageNumber)">
+                                        @pageNumber
+                                    </button>
+                                }
+
+                                <button class="btn btn-outline btn-sm"
+                                        @onclick="() => LoadPastAppointments(pastAppointmentsPagedData.PageInfo.currentPage + 1)"
+                                        disabled="@(pastAppointmentsPagedData.PageInfo.currentPage == pastAppointmentsPagedData.PageInfo.totalPageCount)">
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+
+                                <button class="btn btn-outline btn-sm"
+                                        @onclick="() => LoadPastAppointments(pastAppointmentsPagedData.PageInfo.totalPageCount)"
+                                        disabled="@(pastAppointmentsPagedData.PageInfo.currentPage == pastAppointmentsPagedData.PageInfo.totalPageCount)">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
+                }
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private DateTime comingReservation => new();
+    private List<AppointmentDto>? appointments;
+    private List<AppointmentDto>? upcomingAppointments;
+    private PagedViewModel<AppointmentDto>? pastAppointmentsPagedData;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private bool isLoading = false;
+    private bool isRefreshing = false;
+    private Guid? loadingAppointmentId; // Hangi randevunun iptal edildiğini takip etmek için
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllData();
+    }
+
+    private async Task LoadAllData()
+    {
+        await LoadAppointments();
+        await LoadPastAppointments(currentPage);
+    }
+
+    private async Task RefreshUpcomingAppointments()
+    {
+        try
+        {
+            isRefreshing = true;
+            StateHasChanged();
+
+            await LoadAppointments();
+        }
+        finally
+        {
+            isRefreshing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAppointments()
+    {
+        try
+        {
+            // Önceki listeyi temizle
+            appointments = null;
+            upcomingAppointments = null;
+            StateHasChanged();
+
+            // Tüm randevuları yeniden yükle
+            appointments = await AppointmentService.GetUserAppointments();
+
+            if (appointments != null)
+            {
+                var now = DateTime.Now;
+                upcomingAppointments = appointments
+                    .Where(a => a.AppointmentDate >= now)
+                    .OrderBy(a => a.AppointmentDate)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadAppointments Hata: {ex.Message}");
+        }
+    }
+
+    private async Task LoadPastAppointments(int page)
+    {
+        try
+        {
+            currentPage = page;
+            pastAppointmentsPagedData = await AppointmentService.getPaginatedAppointment(page, pageSize);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadPastAppointments Hata: {ex.Message}");
+        }
+    }
+
+  private async Task RefreshPage()
+{
+    // Tüm verileri sıfırla
+    appointments = null;
+    upcomingAppointments = null;
+    pastAppointmentsPagedData = null;
+    StateHasChanged();
+
+    // Kısa bir bekleme süresi ekleyelim
+    await Task.Delay(300);
+    
+    // Tüm verileri yeniden yükle
+    await LoadAllData();
+}
+
+    private async Task ViewDetails(Guid appointmentId)
+    {
+        try
+        {
+            var appointmentDetail = await AppointmentService.GetByIdAppointmentsDetail(appointmentId);
+
+            if (appointmentDetail != null)
+            {
+                Navigation.NavigateTo($"/appointment/{appointmentId}");
+                await Task.Delay(100);
+                await RefreshPage();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ViewDetails Hata: {ex.Message}");
+        }
+    }
+
+    private async Task OnAppointmentStatusChanged(AppointmentDto updatedAppointment)
+    {
+        if (appointments != null)
+        {
+            var existingAppointment = appointments.FirstOrDefault(a => a.Id == updatedAppointment.Id);
+            if (existingAppointment != null)
+            {
+                existingAppointment.ReservationStatus = updatedAppointment.ReservationStatus;
+            }
+        }
+
+        await RefreshPage();
+        StateHasChanged();
+    }
+
+    private void goToRezerv()
+    {
+        Navigation.NavigateTo("/rezervasyon");
+    }
+
+    private async void SendComingReservationEmail()
+    {
+        string subject = "";
+        string body = "";
+        string toEmail = "";
+
+        await emailService.SendEmailAsync(subject, body, toEmail);
+    }
+
+    private async Task CancelAppointment(Guid appointmentId)
+    {
+        try
+        {
+            isLoading = true;
+            loadingAppointmentId = appointmentId;
+            StateHasChanged();
+
+            var result = await AppointmentService.CancelAppointmentAsync(appointmentId);
+
+            if (result != Guid.Empty)
+            {
+                // Doğrudan upcomingAppointments listesini güncelle
+                if (upcomingAppointments != null)
+                {
+                    var appointmentToUpdate = upcomingAppointments.FirstOrDefault(a => a.Id == appointmentId);
+                    if (appointmentToUpdate != null)
+                    {
+                        appointmentToUpdate.ReservationStatus = ReservationStatus.Canceled;
+                    }
+                }
+
+                // Tüm verileri yeniden yükle
+                await LoadAllData();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CancelAppointment Hata: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            loadingAppointmentId = null;
+            StateHasChanged();
+        }
+    }
+
+    private void DownloadReport(Guid appointmentId)
+    {
+        // Rapor indirme işlemleri
+    }
+
+    private string GetStatusText(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Pending => "Onay Bekliyor",
+            ReservationStatus.Confirmed => "Onaylandı",
+            ReservationStatus.Canceled => "İptal Edildi",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private string GetStatusClass(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Pending => "pending",
+            ReservationStatus.Confirmed => "confirmed",
+            ReservationStatus.Canceled => "canceled",
+            _ => "unknown"
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Navigation event listener
+        }
+    }
+}

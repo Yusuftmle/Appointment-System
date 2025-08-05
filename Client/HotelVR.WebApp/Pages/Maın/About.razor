@@ -1,0 +1,387 @@
+﻿@page "/hakkimda"
+
+<main class="main">
+    <!-- Breadcrumb Schema -->
+    <nav aria-label="breadcrumb" style="display: none;">
+        <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/">
+                    <span itemprop="name">Anasayfa</span>
+                </a>
+                <meta itemprop="position" content="1" />
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a itemprop="item" href="/hakkimda">
+                    <span itemprop="name">Hakkımda</span>
+                </a>
+                <meta itemprop="position" content="2" />
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="page-title">
+        <div class="container">
+            <div class="breadcrumbs">
+                <ol>
+                    <li><a href="/">Anasayfa</a></li>
+                    <li><a href="/hakkimda">hakkımda</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section with Enhanced Schema -->
+    <section id="about" class="about section" itemscope itemtype="https://schema.org/Person">
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+            <h1 itemprop="name">Uzm. Psikolojik Danışman Hatice Çağıl Kandemir</h1>
+            <p itemprop="description">Ruh sağlığı yolculuğunuzda size eşlik etmek için buradayım</p>
+        </div>
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="row gy-4 justify-content-center">
+                <div class="col-lg-4">
+                    <img src="/assets/img/profile-img.jpg"
+                         class="img-fluid rounded-circle shadow"
+                         alt="Uzm. Psikolojik Danışman Hatice Çağıl Kandemir - Meridyen Psikoloji"
+                         itemprop="image"
+                         loading="lazy"
+                         width="300"
+                         height="300">
+                </div>
+                <div class="col-lg-8 content">
+                    <h2 itemprop="jobTitle">Uzman Psikolojik Danışman & Oyun Terapisti</h2>
+                    <p class="fst-italic py-3" itemprop="description">
+                        Her bireyin kendine özgü bir hikayesi ve iyileşme yolculuğu vardır. Amacım, bu yolculukta size güvenli bir alan sunarak içsel kaynaklarınızı keşfetmenize yardımcı olmaktır. Özellikle çocuklar, çiftler ve ailelerle çalışarak sağlıklı ilişkiler kurmaya odaklanıyorum.
+                    </p>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <ul>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Uzmanlık Alanları:</strong>
+                                    <span>
+                                        <span itemprop="knowsAbout">Oyun Terapisi</span>,
+                                        <span itemprop="knowsAbout">Çift Terapisi</span>,
+                                        <span itemprop="knowsAbout">Aile Danışmanlığı</span>,
+                                        <span itemprop="knowsAbout">Evlilik Danışmanlığı</span>
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Web Sitesi:</strong>
+                                    <a href="https://www.meridyenpsikoloji.com" itemprop="url">www.meridyenpsikoloji.com</a>
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Telefon:</strong>
+                                    <a href="tel:+905539375078" itemprop="telephone">+90 553 937 5078</a>
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Lokasyon:</strong>
+                                    <span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+                                        <span itemprop="addressLocality">Çankaya</span>,
+                                        <span itemprop="addressRegion">Ankara</span>,
+                                        <span itemprop="addressCountry">Türkiye</span>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6">
+                            <ul>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Deneyim:</strong>
+                                    <span>12+ Yıl</span>
+                                    <meta itemprop="yearsOfExperience" content="12">
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Eğitim:</strong>
+                                    <span itemprop="hasCredential" itemscope itemtype="https://schema.org/EducationalOccupationalCredential">
+                                        <span itemprop="credentialCategory">Yüksek Lisans - Klinik Psikoloji</span>
+                                        <meta itemprop="educationalLevel" content="Masters">
+                                    </span>
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>E-posta:</strong>
+                                    <a href="mailto:info@meridyenpsikoloji.com" itemprop="email">info@meridyenpsikoloji.com</a>
+                                </li>
+                                <li>
+                                    <i class="bi bi-chevron-right"></i> <strong>Online Terapi:</strong>
+                                    <span>Mevcut</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <p class="py-3">
+                        Lisans eğitimimi
+                        <span itemprop="alumniOf" itemscope itemtype="https://schema.org/EducationalOrganization">
+                            <span itemprop="name">Boğaziçi Üniversitesi</span>
+                        </span>
+                        Psikoloji bölümünde tamamladıktan sonra, klinik psikoloji alanında yüksek lisans derecemi aldım.
+                        12+ yıllık deneyimimle, çocuklar, yetişkinler, çiftler ve ailelerle çalışarak yaşam kalitelerini artırmak için bütüncül bir yaklaşım benimsiyorum.
+                        Terapi sürecinde;
+                        <span itemprop="knowsAbout">oyun terapisi</span>,
+                        <span itemprop="knowsAbout">bilişsel davranışçı terapi</span>,
+                        <span itemprop="knowsAbout">bağlanma temelli terapi</span> ve
+                        <span itemprop="knowsAbout">travma terapisi</span> tekniklerini entegre ederek kişiye özel tedavi planları oluşturuyorum.
+                    </p>
+
+                    <!-- Hidden Schema Data -->
+                    <div style="display: none;">
+                        <span itemprop="serviceType">Oyun Terapisi</span>
+                        <span itemprop="serviceType">Online Terapi</span>
+                        <span itemprop="serviceType">Aile Danışmanlığı</span>
+                        <span itemprop="serviceType">Çift Terapisi</span>
+                        <span itemprop="serviceType">Evlilik Danışmanlığı</span>
+                        <span itemprop="serviceType">Bireysel Terapi</span>
+                        <span itemprop="serviceType">Kaygı Bozuklukları Tedavisi</span>
+                        <span itemprop="serviceType">Depresyon Tedavisi</span>
+                        <span itemprop="serviceType">Travma Terapisi</span>
+                        <span itemprop="serviceType">Bağlanma Problemleri</span>
+                        <span itemprop="priceRange">$$</span>
+                        <span itemprop="paymentAccepted">Nakit, Kredi Kartı, Havale</span>
+                        <span itemprop="currenciesAccepted">TRY</span>
+                    </div>
+
+                    <!-- Call-to-Action -->
+                    <div class="mt-4">
+                        <a href="/randevu" class="btn btn-primary btn-lg">
+                            <i class="bi bi-calendar-check"></i> Randevu Al
+                        </a>
+                        <a href="/iletisim" class="btn btn-outline-primary btn-lg ms-3">
+                            <i class="bi bi-envelope"></i> İletişime Geç
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Achievements Section -->
+        <div class="container mt-5" data-aos="fade-up" data-aos-delay="200">
+            <div class="row">
+                <div class="col-12">
+                    <h3>Profesyonel Başarılar ve Sertifikalar</h3>
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="achievement-card p-3 border rounded"
+                                 itemprop="hasCredential" itemscope itemtype="https://schema.org/EducationalOccupationalCredential">
+                                <i class="bi bi-award fs-2 text-primary"></i>
+                                <h5 class="mt-2" itemprop="name">Klinik Psikoloji Yüksek Lisans</h5>
+                                <p itemprop="description">Klinik psikoloji alanında uzmanlaşmış yüksek lisans derecesi</p>
+                                <meta itemprop="credentialCategory" content="Masters Degree">
+                                <span itemprop="recognizedBy" itemscope itemtype="https://schema.org/Organization">
+                                    <meta itemprop="name" content="Boğaziçi Üniversitesi">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="achievement-card p-3 border rounded"
+                                 itemprop="hasCredential" itemscope itemtype="https://schema.org/EducationalOccupationalCredential">
+                                <i class="bi bi-people fs-2 text-success"></i>
+                                <h5 class="mt-2" itemprop="name">Oyun Terapisi Uzmanlığı</h5>
+                                <p itemprop="description">2-12 yaş çocuklar için özel oyun terapisi eğitimi</p>
+                                <meta itemprop="credentialCategory" content="Professional Certificate">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="achievement-card p-3 border rounded">
+                                <i class="bi bi-graph-up fs-2 text-info"></i>
+                                <h5 class="mt-2">⭐ 4.8/5 Müşteri Memnuniyeti</h5>
+                                <p>127 değerlendirme ile kanıtlanmış başarı</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonials Section -->
+        <div class="container mt-5" data-aos="fade-up" data-aos-delay="250">
+            <h3>Müşteri Yorumları</h3>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="testimonial-card p-4 border rounded shadow-sm">
+                        <div class="stars mb-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="mb-3">"Bilişsel Davranışçı Terapi sürecinde Hatice Hanım, kaygılarımı somut araçlarla anlamamı ve baş etmeyi öğrenmemi sağladı. Seanslarda kendimi güvende hissettim; yargılanmadan, bilimsel ve sıcak bir yaklaşımla dinlenmek çok iyileştiriciydi."</p>
+                        <footer class="text-muted">- M. Y.</footer>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="testimonial-card p-4 border rounded shadow-sm">
+                        <div class="stars mb-2">
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                            <i class="bi bi-star-fill text-warning"></i>
+                        </div>
+                        <p class="mb-3">"5 yaşındaki çocuğumuz için oyun terapisine başladık. Hatice Hanım'ın çocuğumuzla kurduğu güvenli bağ ve profesyonel yaklaşımı sayesinde hem duygusal krizlerimiz azaldı hem de ev içindeki iletişimimiz güçlendi."</p>
+                        <footer class="text-muted">- Z. A.</footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section with Enhanced Schema -->
+        <div class="container mt-5" data-aos="fade-up" data-aos-delay="300">
+            <h3>Sıkça Sorulan Sorular</h3>
+            <div class="accordion mt-4" id="aboutFAQ" itemscope itemtype="https://schema.org/FAQPage">
+                <div class="accordion-item mb-3" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+                    <h4 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq1" aria-expanded="false">
+                            <span itemprop="name">Oyun terapisi nasıl çalışır?</span>
+                        </button>
+                    </h4>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#aboutFAQ">
+                        <div class="accordion-body" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+                            <div itemprop="text">
+                                Oyun terapisi, 2-12 yaş arası çocukların doğal iletişim dili olan oyun aracılığıyla duygusal ve davranışsal gelişimlerini destekler.
+                                Çocuklar oyun sırasında kendilerini rahatça ifade eder ve içlerindeki duyguları güvenli bir şekilde işlerler.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-3" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+                    <h4 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq2" aria-expanded="false">
+                            <span itemprop="name">Online terapi etkili midir?</span>
+                        </button>
+                    </h4>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#aboutFAQ">
+                        <div class="accordion-body" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+                            <div itemprop="text">
+                                Araştırmalar online terapinin yüz yüze terapi kadar etkili olduğunu göstermektedir.
+                                Türkiye'nin her yerinden erişilebilen güvenli platform üzerinden kaliteli terapi hizmeti sunuyoruz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-3" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+                    <h4 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq3" aria-expanded="false">
+                            <span itemprop="name">Hangi yaş gruplarıyla çalışıyorsunuz?</span>
+                        </button>
+                    </h4>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#aboutFAQ">
+                        <div class="accordion-body" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+                            <div itemprop="text">
+                                2-12 yaş arası çocuklar için oyun terapisi, yetişkinler için bireysel terapi,
+                                çiftler için çift terapisi ve aileler için aile danışmanlığı hizmetleri sunmaktayım.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item mb-3" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+                    <h4 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#faq4" aria-expanded="false">
+                            <span itemprop="name">Randevu almak için ne yapmalıyım?</span>
+                        </button>
+                    </h4>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#aboutFAQ">
+                        <div class="accordion-body" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+                            <div itemprop="text">
+                                0553-937-5078 numaralı telefondan bize ulaşabilir veya web sitemizdeki randevu formunu doldurabilirsiniz.
+                                Hafta içi 09:00-18:00, Cumartesi 10:00-16:00 saatleri arasında hizmet vermekteyiz.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+@code {
+    @inject IJSRuntime JS
+
+    private readonly string pageTitle = "Hakkımda - Uzm. Psikolojik Danışman Hatice Çağıl Kandemir | Meridyen Psikoloji";
+    private readonly string pageDescription = "12+ yıl deneyimli uzman psikolojik danışman Hatice Çağıl Kandemir. Oyun terapisi, çift terapisi, aile danışmanlığı. Ankara Çankaya'da yüz yüze ve online terapi hizmetleri.";
+    private readonly string pageUrl = "https://www.meridyenpsikoloji.com/hakkimda";
+    private readonly string pageImage = "https://www.meridyenpsikoloji.com/assets/img/profile-img.jpg";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Basic Meta Tags
+                await SetBasicMetaTags();
+
+                // Open Graph Tags
+                await SetOpenGraphTags();
+
+                // Twitter Card Tags
+                await SetTwitterCardTags();
+
+                // Additional SEO Tags
+                await SetAdditionalSeoTags();
+            }
+            catch (Exception ex)
+            {
+                // Log error - production'da logging sisteminize göre ayarlayın
+                Console.WriteLine($"Meta tag setting error: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task SetBasicMetaTags()
+    {
+        await JS.InvokeVoidAsync("setTitle", pageTitle);
+        await JS.InvokeVoidAsync("setMetaTag", "description", pageDescription);
+        await JS.InvokeVoidAsync("setMetaTag", "keywords",
+            "Hatice Çağıl Kandemir, uzman psikolog Ankara, oyun terapisti Çankaya, çift terapisi Ankara, aile danışmanlığı, online terapi, evlilik danışmanlığı Ankara, çocuk psikoloğu, bireysel terapi");
+        await JS.InvokeVoidAsync("setCanonical", pageUrl);
+        await JS.InvokeVoidAsync("setMetaTag", "robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+    }
+
+    private async Task SetOpenGraphTags()
+    {
+        await JS.InvokeVoidAsync("setMetaTag", "og:title", pageTitle, "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:description", pageDescription, "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:type", "profile", "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:url", pageUrl, "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:image", pageImage, "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:image:width", "300", "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:image:height", "300", "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:image:alt", "Uzm. Psikolojik Danışman Hatice Çağıl Kandemir", "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:locale", "tr_TR", "property");
+        await JS.InvokeVoidAsync("setMetaTag", "og:site_name", "Meridyen Psikoloji", "property");
+    }
+
+    private async Task SetTwitterCardTags()
+    {
+        await JS.InvokeVoidAsync("setMetaTag", "twitter:card", "summary_large_image");
+        await JS.InvokeVoidAsync("setMetaTag", "twitter:title", pageTitle);
+        await JS.InvokeVoidAsync("setMetaTag", "twitter:description", pageDescription);
+        await JS.InvokeVoidAsync("setMetaTag", "twitter:image", pageImage);
+        await JS.InvokeVoidAsync("setMetaTag", "twitter:image:alt", "Uzm. Psikolojik Danışman Hatice Çağıl Kandemir");
+    }
+
+    private async Task SetAdditionalSeoTags()
+    {
+        await JS.InvokeVoidAsync("setMetaTag", "author", "Hatice Çağıl Kandemir");
+        await JS.InvokeVoidAsync("setMetaTag", "geo.region", "TR-06");
+        await JS.InvokeVoidAsync("setMetaTag", "geo.placename", "Ankara");
+        await JS.InvokeVoidAsync("setMetaTag", "ICBM", "39.9334, 32.8597");
+        await JS.InvokeVoidAsync("setMetaTag", "viewport", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
+        await JS.InvokeVoidAsync("setMetaTagHttpEquiv", "content-language", "tr-TR");
+
+        // Professional specific tags
+        await JS.InvokeVoidAsync("setMetaTag", "profession", "Psychological Counselor");
+        await JS.InvokeVoidAsync("setMetaTag", "specialization", "Play Therapy, Couples Therapy, Family Counseling");
+    }
+}

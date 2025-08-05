@@ -1,0 +1,317 @@
+﻿@page "/iletisim"
+<div class="page-title">
+    <div class="container">
+        <div class="breadcrumbs">
+            <ol>
+                <li><a href="/">Anasayfa</a></li>
+                <li><a href="/iletisim">İletişim</a></li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<section id="contact" class="contact section">
+
+    <!-- Bölüm Başlığı -->
+    <div class="container section-title" data-aos="fade-up">
+        <h2>İletişim</h2>
+        <p>Bizimle iletişime geçmek için aşağıdaki formu doldurabilir ya da iletişim bilgilerimizi kullanabilirsiniz.</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+            <div class="col-lg-5">
+                <div class="info-wrap">
+                    <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="200">
+                        <i class="bi bi-geo-alt flex-shrink-0"></i>
+                        <div>
+                            <h3>Adres</h3>
+                            <p>FARİLYA İŞ MERKEZİ Kızılırmak, Ufuk Ünv. Cd NO:8, 06510 Çankaya/Ankara</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="300">
+                        <i class="bi bi-telephone flex-shrink-0"></i>
+                        <div>
+                            <h3>Telefon</h3>
+                            <p>0553 937 50 78</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item d-flex" data-aos="fade-up" data-aos-delay="400">
+                        <i class="bi bi-envelope flex-shrink-0"></i>
+                        <div>
+                            <h3>E-Posta</h3>
+                            <p>hatice@meridyenpsikoloji.com</p>
+                        </div>
+                    </div>
+
+                    <!-- OpenStreetMap Haritası - Google API'siz -->
+                    <div class="map-container" style="border:0; width: 100%; height: 270px; border-radius: 8px; overflow: hidden;" data-aos="fade-up" data-aos-delay="500">
+                        <iframe src="https://www.openstreetmap.org/export/embed.html?bbox=32.800689%2C39.904303%2C32.814689%2C39.914303&amp;layer=mapnik&amp;marker=39.909303%2C32.807689"
+                                style="border: 0; width: 100%; height: 100%;"
+                                allowfullscreen=""
+                                loading="lazy">
+                        </iframe>
+                        <div style="margin-top: 10px; text-align: center;">
+                            <small>
+                                <a href="https://www.google.com/maps/place/FARİLYA+İŞ+MERKEZİ+Kızılırmak,+Ufuk+Ünv.+Cd+NO:8,+06510+Çankaya%2FAnkara"
+                                   target="_blank"
+                                   style="color: #0066cc; text-decoration: none;">
+                                    <i class="bi bi-geo-alt"></i> Google Maps'te Görüntüle
+                                </a>
+                                &nbsp;|&nbsp;
+                                <a href="https://www.openstreetmap.org/?mlat=39.909303&amp;mlon=32.807689#map=16/39.909303/32.807689"
+                                   target="_blank"
+                                   style="color: #0066cc; text-decoration: none;">
+                                    OpenStreetMap'te Görüntüle
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <form action="forms/contact.php" method="post" class="php-email-form" data-aos="fade-up"
+                      data-aos-delay="200">
+                    <div class="row gy-4">
+
+                        <div class="col-md-6">
+                            <label for="name-field" class="pb-2">Adınız</label>
+                            <input type="text" name="name" id="name-field" class="form-control" placeholder="Adınızı girin" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="email-field" class="pb-2">E-Posta Adresiniz</label>
+                            <input type="email" class="form-control" name="email" id="email-field" placeholder="E-posta adresinizi girin" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="subject-field" class="pb-2">Konu</label>
+                            <input type="text" class="form-control" name="subject" id="subject-field" placeholder="Mesaj konusunu yazın" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="message-field" class="pb-2">Mesajınız</label>
+                            <textarea class="form-control" name="message" rows="10" id="message-field"
+                                      placeholder="Mesajınızı buraya yazın..." required></textarea>
+                        </div>
+
+                        <div class="col-md-12 text-center">
+                            <div class="loading">Gönderiliyor...</div>
+                            <div class="error-message"></div>
+                            <div class="sent-message">Mesajınız başarıyla gönderildi. Teşekkür ederiz!</div>
+
+                            <button type="submit">Gönder</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+@code{
+    @inject IJSRuntime JS
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Sayfa Başlığı - Optimized Title
+            await JS.InvokeVoidAsync("setTitle", "İletişim - Meridyen Psikoloji | Ankara Çankaya Psikolog Randevu Tel: 0553 937 50 78");
+
+            // Meta Description - Detaylı ve çekici açıklama
+            await JS.InvokeVoidAsync("setMetaTag", "description", "Ankara Çankaya'da Meridyen Psikoloji ile iletişime geçin. Psikolog Hatice Hanım'dan profesyonel psikolojik danışmanlık ve terapi hizmetleri. Randevu: 0553 937 50 78 | Ufuk Üniversitesi yakını");
+
+            // Meta Keywords - Stratejik anahtar kelimeler
+            await JS.InvokeVoidAsync("setMetaTag", "keywords", "Ankara psikolog iletişim, Çankaya psikolog randevu, Meridyen Psikoloji telefon, Ankara psikolojik danışmanlık, Ufuk Üniversitesi psikolog, Kızılırmak psikolog, Ankara terapi merkezi, psikolog hatice");
+
+            // Author ve Publisher
+            await JS.InvokeVoidAsync("setMetaTag", "author", "Psikolog Hatice - Meridyen Psikoloji");
+            await JS.InvokeVoidAsync("setMetaTag", "publisher", "Meridyen Psikoloji Danışmanlık Merkezi");
+
+            // Robots ve Technical SEO
+            await JS.InvokeVoidAsync("setMetaTag", "robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+            await JS.InvokeVoidAsync("setMetaTag", "googlebot", "index, follow");
+
+            // Geographic Meta Tags
+            await JS.InvokeVoidAsync("setMetaTag", "geo.region", "TR-06");
+            await JS.InvokeVoidAsync("setMetaTag", "geo.placename", "Ankara, Çankaya, Kızılırmak");
+            await JS.InvokeVoidAsync("setMetaTag", "geo.position", "39.90930307140694;32.807689312143495");
+            await JS.InvokeVoidAsync("setMetaTag", "ICBM", "39.90930307140694, 32.807689312143495");
+
+            // Language ve Locale
+            await JS.InvokeVoidAsync("setMetaTagHttpEquiv", "Content-Language", "tr");
+            await JS.InvokeVoidAsync("setMetaTag", "language", "Turkish");
+
+            // Open Graph Tags - Facebook optimizasyonu
+            await JS.InvokeVoidAsync("setMetaTag", "og:title", "İletişim - Meridyen Psikoloji | Ankara Çankaya Psikolog Randevu", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:description", "Ankara Çankaya'da Meridyen Psikoloji ile iletişime geçin. Psikolog Hatice Hanım'dan profesyonel psikolojik danışmanlık ve terapi hizmetleri. Randevu için hemen arayın.", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:type", "website", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:url", "https://www.meridyenpsikoloji.com/iletisim", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:image", "https://www.meridyenpsikoloji.com/assets/img/meridyen-psikoloji-iletisim-og.jpg", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:image:width", "1200", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:image:height", "630", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:image:alt", "Meridyen Psikoloji İletişim - Ankara Çankaya Psikolog", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:locale", "tr_TR", "property");
+            await JS.InvokeVoidAsync("setMetaTag", "og:site_name", "Meridyen Psikoloji", "property");
+
+            // Twitter Card Tags - Twitter optimizasyonu
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:card", "summary_large_image");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:title", "İletişim - Meridyen Psikoloji | Ankara Çankaya Psikolog");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:description", "Ankara Çankaya'da profesyonel psikolojik danışmanlık hizmetleri. Psikolog Hatice Hanım ile randevu almak için iletişim bilgilerimizi kullanın.");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:image", "https://www.meridyenpsikoloji.com/assets/img/meridyen-psikoloji-iletisim-twitter.jpg");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:image:alt", "Meridyen Psikoloji İletişim Sayfası");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:creator", "@meridyenpsikoloji");
+            await JS.InvokeVoidAsync("setMetaTag", "twitter:site", "@meridyenpsikoloji");
+
+            // Business Contact Information
+            await JS.InvokeVoidAsync("setMetaTag", "telephone", "+905539375078");
+            await JS.InvokeVoidAsync("setMetaTag", "contact:phone_number", "+905539375078");
+            await JS.InvokeVoidAsync("setMetaTag", "contact:email", "hatice@meridyenpsikoloji.com");
+
+            // Canonical URL
+            await JS.InvokeVoidAsync("setCanonical", "https://www.meridyenpsikoloji.com/iletisim");
+
+            // Structured Data - JSON-LD Schema
+            var structuredData = @"{
+            '@context': 'https://schema.org',
+            '@graph': [
+                {
+                    '@type': 'ProfessionalService',
+                    '@id': 'https://www.meridyenpsikoloji.com/#business',
+                    'name': 'Meridyen Psikoloji',
+                    'alternateName': 'Meridyen Psikoloji Danışmanlık Merkezi',
+                    'description': 'Ankara Çankaya''da profesyonel psikoloji danışmanlığı ve terapi hizmetleri sunan merkez',
+                    'url': 'https://www.meridyenpsikoloji.com',
+                    'telephone': '+905539375078',
+                    'email': 'hatice@meridyenpsikoloji.com',
+                    'priceRange': '$$',
+                    'currenciesAccepted': 'TRY',
+                    'paymentAccepted': 'Nakit, Kredi Kartı, Havale',
+                    'address': {
+                        '@type': 'PostalAddress',
+                        'streetAddress': 'FARİLYA İŞ MERKEZİ Kızılırmak, Ufuk Ünv. Cd NO:8',
+                        'addressLocality': 'Çankaya',
+                        'addressRegion': 'Ankara',
+                        'postalCode': '06510',
+                        'addressCountry': 'TR'
+                    },
+                    'geo': {
+                        '@type': 'GeoCoordinates',
+                        'latitude': 39.90930307140694,
+                        'longitude': 32.807689312143495
+                    },
+                    'openingHoursSpecification': [
+                        {
+                            '@type': 'OpeningHoursSpecification',
+                            'dayOfWeek': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                            'opens': '09:00',
+                            'closes': '18:00'
+                        }
+                    ],
+                    'areaServed': [
+                        {
+                            '@type': 'City',
+                            'name': 'Ankara'
+                        },
+                        {
+                            '@type': 'AdministrativeArea',
+                            'name': 'Çankaya'
+                        }
+                    ],
+                    'serviceType': ['Psikolojik Danışmanlık', 'Terapi', 'Aile Danışmanlığı', 'Bireysel Terapi'],
+                    'hasOfferCatalog': {
+                        '@type': 'OfferCatalog',
+                        'name': 'Psikoloji Hizmetleri',
+                        'itemListElement': [
+                            {
+                                '@type': 'Offer',
+                                'itemOffered': {
+                                    '@type': 'Service',
+                                    'name': 'Bireysel Psikolojik Danışmanlık',
+                                    'description': 'Kişisel sorunlar için profesyonel destek'
+                                }
+                            },
+                            {
+                                '@type': 'Offer',
+                                'itemOffered': {
+                                    '@type': 'Service',
+                                    'name': 'Aile Danışmanlığı',
+                                    'description': 'Aile içi iletişim ve ilişki sorunları için destek'
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    '@type': 'Person',
+                    '@id': 'https://www.meridyenpsikoloji.com/#psychologist',
+                    'name': 'Hatice',
+                    'jobTitle': 'Psikolog',
+                    'worksFor': {
+                        '@id': 'https://www.meridyenpsikoloji.com/#business'
+                    },
+                    'telephone': '+905539375078',
+                    'email': 'hatice@meridyenpsikoloji.com',
+                    'address': {
+                        '@type': 'PostalAddress',
+                        'streetAddress': 'FARİLYA İŞ MERKEZİ Kızılırmak, Ufuk Ünv. Cd NO:8',
+                        'addressLocality': 'Çankaya',
+                        'addressRegion': 'Ankara',
+                        'postalCode': '06510',
+                        'addressCountry': 'TR'
+                    }
+                },
+                {
+                    '@type': 'ContactPage',
+                    '@id': 'https://www.meridyenpsikoloji.com/iletisim#contactpage',
+                    'url': 'https://www.meridyenpsikoloji.com/iletisim',
+                    'name': 'İletişim - Meridyen Psikoloji',
+                    'description': 'Meridyen Psikoloji ile iletişime geçin, randevu alın',
+                    'mainEntity': {
+                        '@id': 'https://www.meridyenpsikoloji.com/#business'
+                    },
+                    'breadcrumb': {
+                        '@type': 'BreadcrumbList',
+                        'itemListElement': [
+                            {
+                                '@type': 'ListItem',
+                                'position': 1,
+                                'name': 'Anasayfa',
+                                'item': 'https://www.meridyenpsikoloji.com'
+                            },
+                            {
+                                '@type': 'ListItem',
+                                'position': 2,
+                                'name': 'İletişim',
+                                'item': 'https://www.meridyenpsikoloji.com/iletisim'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }";
+
+            await JS.InvokeVoidAsync("addPageSchema", structuredData);
+
+            // Additional Performance Tags
+            await JS.InvokeVoidAsync("setMetaTag", "theme-color", "#0066cc");
+            await JS.InvokeVoidAsync("setMetaTag", "msapplication-TileColor", "#0066cc");
+            await JS.InvokeVoidAsync("setMetaTag", "apple-mobile-web-app-capable", "yes");
+            await JS.InvokeVoidAsync("setMetaTag", "apple-mobile-web-app-status-bar-style", "default");
+
+           
+        }
+    }
+}
+}

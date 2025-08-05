@@ -1,0 +1,495 @@
+﻿@page "/blog"
+@using Application.Models
+@using Application.Models.Page
+@inject IBlogPostService blogPostService
+
+<div class="page-title">
+    <div class="container">
+
+        <div class="breadcrumbs">
+
+            <ol>
+                <li><a href="/">Anasayfa</a></li>
+                <li><a href="/blog">Bloglar</a></li>
+
+            </ol>
+
+        </div>
+    </div>
+</div>
+    <div class="container">
+        <!-- Filter Section -->
+        <div class="blog-filters" data-aos="fade-up">
+            <div class="filter-row">
+                <div class="search-container">
+                    <div class="search-box">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <input type="text" 
+                               @bind="searchTerm" 
+                               @bind:event="oninput"
+                               @onkeyup="OnSearchChanged"
+                               placeholder="Makale ara..." 
+                               class="search-input" />
+                        @if (!string.IsNullOrEmpty(searchTerm))
+                        {
+                            <button type="button" class="clear-search" @onclick="ClearSearch">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                </div>
+                
+                <div class="filter-controls">
+                    <div class="category-filter">
+                        <select @bind:get="selectedCategory" @bind:set="OnCategoryChangedWithValue" class="category-select">
+                            <option value="">Tüm Kategoriler</option>
+                            @foreach (var category in availableCategories)
+                            {
+                                <option value="@category">@category</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="sort-filter">
+                        <select @bind:get="selectedSort" @bind:set="OnSortChangedWithValue" class="sort-select">
+                            <option value="newest">En Yeni</option>
+                            <option value="oldest">En Eski</option>
+                            <option value="title">Başlık A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            
+            @if (hasActiveFilters)
+            {
+                <div class="active-filters">
+                    <span class="filter-label">Aktif Filtreler:</span>
+                    @if (!string.IsNullOrEmpty(searchTerm))
+                    {
+                        <span class="filter-tag">
+                            Arama: "@searchTerm"
+                            <button @onclick="ClearSearch" class="remove-filter">×</button>
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(selectedCategory))
+                    {
+                        <span class="filter-tag">
+                            Kategori: @selectedCategory
+                            <button @onclick="ClearCategory" class="remove-filter">×</button>
+                        </span>
+                    }
+                    <button @onclick="ClearAllFilters" class="clear-all-filters">Tümünü Temizle</button>
+                </div>
+            }
+        </div>
+        
+        <!-- Results Info -->
+        @if (isLoading)
+        {
+            <div class="loading-state" data-aos="fade-up">
+                <div class="loading-spinner"></div>
+                <p>Makaleler yükleniyor...</p>
+            </div>
+        }
+        else if (blogList.Results != null && blogList.Results.Any())
+        {
+            <div class="results-info" data-aos="fade-up">
+                <p class="results-count">
+                    <strong>@totalResults</strong> makaleden <strong>@Math.Min(pageSize, blogList.Results.Count)</strong> tanesi gösteriliyor
+                </p>
+            </div>
+
+            <!-- Blog Grid -->
+            <div class="blog-grid" data-aos="fade-up" data-aos-delay="100">
+                @foreach (var blog in blogList.Results)
+                {
+                    <article class="blog-card">
+                        <div class="card-image">
+                            @if (!string.IsNullOrEmpty(blog.CoverImageUrl))
+                            {
+                                <img src="@blog.CoverImageUrl" alt="@blog.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="image-placeholder">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="currentColor"/>
+                                    </svg>
+                                </div>
+                            }
+                            <div class="card-date">
+                                <span class="date-day">@blog.CreatedAt.ToString("dd")</span>
+                                <span class="date-month">@blog.CreatedAt.ToString("MMM")</span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-content">
+                            <div class="card-meta">
+                                @if (!string.IsNullOrEmpty(blog.BlogTagName))
+                                {
+                                    <span class="category-tag">@blog.BlogTags</span>
+                                }
+                                <span class="read-time">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    @GetReadTime(blog.Content) dakika
+                                </span>
+                            </div>
+                            
+                            <h2 class="card-title">
+                                <a href="@($"/blog/{blog.Slug}")" class="title-link">@blog.Title</a>
+                            </h2>
+                            
+                            <p class="card-excerpt">
+                                @GetExcerpt(blog.Summary)
+                            </p>
+                            
+                            <div class="card-footer">
+                                @if (!string.IsNullOrEmpty(blog.Author))
+                                {
+                                    <span class="author">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                                        </svg>
+                                        @blog.Author
+                                    </span>
+                                }
+                                <a href="@($"/blog/{blog.Slug}")" class="read-more-btn">
+                                    Devamını Oku
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <nav class="pagination-container" aria-label="Blog sayfa navigasyonu" data-aos="fade-up">
+                    <div class="pagination">
+                        <button class="pagination-btn prev-btn @(currentPage == 1 ? "disabled" : "")"
+                                @onclick="@(() => LoadPage(currentPage - 1))"
+                                disabled="@(currentPage == 1)"
+                                title="Önceki sayfa">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Önceki
+                        </button>
+
+                        <div class="page-numbers">
+                            @foreach (var pageNum in GetVisiblePageNumbers())
+                            {
+                                @if (pageNum == -1)
+                                {
+                                    <span class="pagination-ellipsis">...</span>
+                                }
+                                else
+                                {
+                                    <button class="pagination-btn page-btn @(currentPage == pageNum ? "active" : "")"
+                                            @onclick="@(() => LoadPage(pageNum))"
+                                            title="Sayfa @pageNum">
+                                        @pageNum
+                                    </button>
+                                }
+                            }
+                        </div>
+
+                        <button class="pagination-btn next-btn @(currentPage == totalPages ? "disabled" : "")"
+                                @onclick="@(() => LoadPage(currentPage + 1))"
+                                disabled="@(currentPage == totalPages)"
+                                title="Sonraki sayfa">
+                            Sonraki
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="pagination-info">
+                        Sayfa @currentPage / @totalPages (@totalResults toplam makale)
+                    </div>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="empty-state" data-aos="fade-up">
+                <div class="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M14 2V8H20" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16 13H8" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16 17H8" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 9H9H8" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </div>
+                <h3 class="empty-title">Henüz makale bulunamadı</h3>
+                <p class="empty-description">
+                    @if (hasActiveFilters)
+                    {
+                        <text>Arama kriterlerinize uygun makale bulunamadı. Filtreleri değiştirmeyi deneyin.</text>
+                    }
+                    else
+                    {
+                        <text>Henüz yayımlanmış makale bulunmuyor. Yakında içerikler eklenecek.</text>
+                    }
+                </p>
+                @if (hasActiveFilters)
+                {
+                    <button @onclick="ClearAllFilters" class="empty-action-btn">
+                        Tüm Filtreleri Temizle
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private PagedViewModel<BlogPostDto> blogList = new();
+    private List<string> availableCategories = new();
+
+    // Filter parameters
+    private string searchTerm = "";
+    private string selectedCategory = "";
+    private string selectedSort = "newest";
+
+    // Pagination
+    private int currentPage = 1;
+    private int totalPages = 1;
+    private int totalResults = 0;
+    private int pageSize = 9;
+
+    // UI State
+    private bool isLoading = false;
+    private Timer? searchTimer;
+
+    // Computed properties
+    private bool hasActiveFilters => !string.IsNullOrEmpty(searchTerm) || !string.IsNullOrEmpty(selectedCategory);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        await LoadPage(1);
+    }
+
+    private async Task LoadCategories()
+    {
+        try
+        {
+            // Kategorileri blog tag'lerinden al
+            var allBlogs = await blogPostService.GetAllAsync(1, 1000); // Tüm blogları al
+
+            // GetAllAsync direkt List<BlogPostDto> döndürüyor
+            availableCategories = allBlogs?.SelectMany(b => b.BlogTags ?? new List<BlogTagDto>())
+                                          .Where(tag => tag != null && !string.IsNullOrEmpty(tag.Name)) 
+                                          .Select(tag => tag.Name) // Tag name'ini al
+                                          .Distinct()
+                                          .OrderBy(c => c)
+                                          .ToList() ?? new List<string>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Kategoriler yüklenirken hata: {ex.Message}");
+            availableCategories = new List<string> { "Psikoloji", "Terapi", "Yaşam", "Gelişim" };
+        }
+    }
+
+    private async Task LoadPage(int page)
+    {
+        if (page < 1) return;
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // GetAllAsync direkt List<BlogPostDto> döndürüyor
+            var allBlogs = await blogPostService.GetAllAsync(1, 1000); // Önce tüm blogları al
+
+            if (allBlogs != null)
+            {
+                var filteredBlogs = allBlogs.AsQueryable();
+
+                // Search term filtresi
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    filteredBlogs = filteredBlogs.Where(b =>
+                        (b.Title != null && b.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                        (b.Content != null && b.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) 
+                       
+                    );
+                }
+
+                // Category filtresi
+                if (!string.IsNullOrEmpty(selectedCategory))
+                {
+                    filteredBlogs = filteredBlogs.Where(b =>
+                        b.BlogTags != null && b.BlogTags.Any(tag =>
+                            tag.Name != null && tag.Name.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase)
+                        )
+                    );
+                }
+
+                // Sıralama
+                filteredBlogs = selectedSort switch
+                {
+                    "oldest" => filteredBlogs.OrderBy(b => b.CreatedAt),
+                    "title" => filteredBlogs.OrderBy(b => b.Title),
+                    "newest" or _ => filteredBlogs.OrderByDescending(b => b.CreatedAt)
+                };
+
+                // Toplam sonuç sayısı
+                totalResults = filteredBlogs.Count();
+                totalPages = Math.Max(1, (int)Math.Ceiling((double)totalResults / pageSize));
+
+                // Sayfalama
+                var pagedResults = filteredBlogs
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                // PagedViewModel oluştur
+                var pageInfo = new Application.Models.Page.Page(page, pageSize, totalResults);
+                blogList = new PagedViewModel<BlogPostDto>(pagedResults, pageInfo);
+                currentPage = page;
+            }
+            else
+            {
+                blogList = new PagedViewModel<BlogPostDto>();
+                totalResults = 0;
+                totalPages = 1;
+                currentPage = 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Blog yükleme hatası: {ex.Message}");
+            blogList = new PagedViewModel<BlogPostDto>();
+            totalResults = 0;
+            totalPages = 1;
+            currentPage = 1;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+        private async Task OnCategoryChangedWithValue(string value)
+        {
+            selectedCategory = value ?? "";
+            await LoadPage(1);
+        }
+
+        private async Task OnSortChangedWithValue(string value)
+        {
+            selectedSort = value ?? "newest";
+            await LoadPage(1);
+        }
+
+    private void OnSearchChanged(KeyboardEventArgs e)
+    {
+        searchTimer?.Dispose();
+        searchTimer = new Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await LoadPage(1);
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private async Task OnCategoryChanged(ChangeEventArgs e)
+    {
+        selectedCategory = e.Value?.ToString() ?? "";
+        await LoadPage(1);
+    }
+
+    private async Task OnSortChanged(ChangeEventArgs e)
+    {
+        selectedSort = e.Value?.ToString() ?? "newest";
+        await LoadPage(1);
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = "";
+        await LoadPage(1);
+    }
+
+    private async Task ClearCategory()
+    {
+        selectedCategory = "";
+        await LoadPage(1);
+    }
+
+    private async Task ClearAllFilters()
+    {
+        searchTerm = "";
+        selectedCategory = "";
+        selectedSort = "newest";
+        await LoadPage(1);
+    }
+
+    private string GetExcerpt(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return "İçerik önizlemesi mevcut değil...";
+        return content.Length > 150 ? content.Substring(0, 150) + "..." : content;
+    }
+
+    private int GetReadTime(string content)
+    {
+        if (string.IsNullOrEmpty(content)) return 5;
+        var wordCount = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        return Math.Max(1, wordCount / 200); // 200 kelime/dakika
+    }
+
+    private List<int> GetVisiblePageNumbers()
+    {
+        var pages = new List<int>();
+
+        if (totalPages <= 7)
+        {
+            for (int i = 1; i <= totalPages; i++)
+                pages.Add(i);
+        }
+        else
+        {
+            pages.Add(1);
+
+            if (currentPage > 4)
+                pages.Add(-1); // ellipsis
+
+            int start = Math.Max(2, currentPage - 1);
+            int end = Math.Min(totalPages - 1, currentPage + 1);
+
+            for (int i = start; i <= end; i++)
+                pages.Add(i);
+
+            if (currentPage < totalPages - 3)
+                pages.Add(-1); // ellipsis
+
+            pages.Add(totalPages);
+        }
+
+        return pages.Distinct().ToList();
+    }
+
+    public void Dispose()
+    {
+        searchTimer?.Dispose();
+    }
+
+}

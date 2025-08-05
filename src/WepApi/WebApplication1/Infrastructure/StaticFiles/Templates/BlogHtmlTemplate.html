@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{Title}} - {{SiteTitle}}</title>
+    <meta name="description" content="{{Summary}}" />
+    <meta name="keywords" content="{{Keywords}}" />
+    <meta name="author" content="{{Author}}" />
+    <meta name="robots" content="{{Robots}}" />
+    <link rel="canonical" href="{{CanonicalUrl}}" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="{{Title}}" />
+    <meta property="og:description" content="{{Summary}}" />
+    <meta property="og:image" content="{{CoverImageUrl}}" />
+    <meta property="og:url" content="{{CanonicalUrl}}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="{{SiteTitle}}" />
+    <meta property="og:locale" content="tr_TR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{{Title}}" />
+    <meta name="twitter:description" content="{{Summary}}" />
+    <meta name="twitter:image" content="{{CoverImageUrl}}" />
+    <meta name="twitter:site" content="@sitetwitter" />
+    <meta name="twitter:creator" content="@authortwitter" />
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "{{Title}}",
+        "description": "{{Summary}}",
+        "image": "{{CoverImageUrl}}",
+        "keywords": "{{Keywords}}",
+        "author": { "@type": "Person", "name": "{{Author}}" },
+        "publisher": {
+            "@type": "Organization",
+            "name": "{{SiteTitle}}",
+            "logo": { "@type": "ImageObject", "url": "{{SiteLogoUrl}}" }
+        },
+        "datePublished": "{{CreatedAt}}",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{{CanonicalUrl}}"
+        }
+    }
+    </script>
+</head>
+<body>
+    <article>
+        <header>
+            <h1>{{Title}}</h1>
+            <div class="meta">
+                <time datetime="{{CreatedAt}}">{{CreatedAtFormatted}}</time>
+                <span>{{Author}}</span>
+            </div>
+        </header>
+        <img src="{{CoverImageUrl}}" alt="{{Title}}" loading="lazy" />
+        <div class="content">
+            {{Content}}
+        </div>
+    </article>
+</body>
+</html>

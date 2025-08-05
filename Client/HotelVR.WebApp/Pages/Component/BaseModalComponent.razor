@@ -1,0 +1,40 @@
+﻿@inject NavigationManager Navigation
+<div class="success-modal-container">
+    <div class="success-modal-content">
+        <h3 class="text-success text-center">@resultMessage</h3>
+        <p class="text-center">Rezervasyonunuz başarıyla oluşturuldu.</p>
+
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <button class="btn btn-primary" @onclick="Close">Tamam</button>
+            <button class="btn btn-success" @onclick="GoToReservations">Rezervasyonlarım</button>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+
+
+
+    [Parameter]
+    public string resultMessage { get; set; }
+
+
+    [CascadingParameter]
+    BlazoredModalInstance? modalInstance { get; set; }
+    private void Close()
+    {
+        Navigation.Refresh();
+
+    }
+
+    private void GoToReservations()
+    {
+        Navigation.NavigateTo("/randevularim");
+    }
+
+
+
+
+}

@@ -1,0 +1,371 @@
+﻿@inject NavigationManager NavManager
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthStateProvider
+
+<header id="header" class="header fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+        <div class="demo-logo">
+            <a href="/" class="logo-style-3">
+                <img src="/assets/img/WhatsApp_Image_2025-05-28_at_14.10.54-removebg-preview.png" alt="Kelly Logo">
+            </a>
+        </div>
+        <div class="code-block">
+        </div>
+        <!-- Navigation Menu -->
+        <nav id="navmenu" class="navmenu">
+            <ul>
+                <li><a href="/" class="active">Anasayfa</a></li>
+                <li><a href="/hakkimda">Hakkımda</a></li>
+                <li><a href="/Ozgecmis">Özgeçmiş</a></li>
+                <li><a href="/Uzmanliklarimiz">Uzmanlıklarımız</a></li>
+                <li><a href="/rezervasyon">Rezervasyonlar</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/iletisim">iletişim</a></li>
+            </ul>
+            <i class="mobile-nav-toggle d-xl-none bi bi-list" @onclick="ToggleMobileNav"></i>
+        </nav>
+
+        <!-- User Menu Section -->
+        <div class="header-social-links d-flex align-items-center">
+            <!-- Sosyal medya linkleri -->
+            <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+
+            <!-- User Menu (AuthorizeView ile) -->
+            <div class="user-menu-wrapper ms-3" id="userMenuWrapper">
+                <AuthorizeView>
+                    <Authorized Context="authContext">
+                        <div class="authenticated-user">
+                            <button class="user-menu-btn dropdown-toggle"
+                                    type="button"
+                                    @onclick="ToggleUserDropdown"
+                                    aria-expanded="@isDropdownOpen.ToString().ToLower()"
+                                    id="userMenuButton">
+                                <div class="user-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="user-name">@authContext.User.Identity?.Name</span>
+                                <i class="bi bi-chevron-down dropdown-arrow"></i>
+                            </button>
+
+                            <ul class="dropdown-menu user-dropdown @(isDropdownOpen ? "show" : "")" aria-labelledby="userMenuButton">
+                                <li class="dropdown-header">
+                                    <div class="user-info">
+                                        <i class="bi bi-person-circle user-icon"></i>
+                                        <span>@authContext.User.Identity?.Name</span>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" @onclick="NavigateProfilePage">
+                                        <i class="bi bi-person"></i>
+                                        Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/randevularim">
+                                        <i class="bi bi-calendar-check"></i>
+                                        Randevularim
+                                    </a>
+                                </li>
+
+                                @if (authContext.User.IsInRole("Admin"))
+                                {
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item admin-item" @onclick="NavigateDashboardPage">
+                                            <i class="bi bi-shield-check"></i>
+                                            Admin Panel
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item logout-item" @onclick="NavigateLogoutPage">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="auth-buttons">
+                            <a href="/login" class="login-btn">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                <span>Giriş</span>
+                            </a>
+                            <a href="/register" class="register-btn">
+                                <i class="bi bi-person-plus"></i>
+                                <span>Kayıt</span>
+                            </a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+
+        </div>
+    </div>
+</header>
+@Body
+
+<!-- Footer -->
+<footer id="footer" class="footer">
+    <div class="footer-top">
+        <div class="container">
+            <div class="row gy-4">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6 footer-about">
+                    <a href="/" class="logo d-flex align-items-center">
+                        <h4 class="sitename">Kelly</h4>
+                    </a>
+                    <div class="footer-contact pt-3">
+                        <p>Professional services and solutions tailored to your needs. We're here to help you achieve your goals.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-3 footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a class="footer-link" @onclick="NavigateHomePage">Anasayfa</a></li>
+                        <li><a class="footer-link" @onclick="NavigateAboutPage">Hakkımda</a></li>
+                        <li><a class="footer-link" @onclick="NavigateCvPage">özgeçmiş</a></li>
+                        <li><a class="footer-link" @onclick="NavigateSpecializationsPage">Uzmanlıklarımız</a></li>
+                        <li><a class="footer-link" @onclick="NavigateReservationPage">Rezervasyonlar</a></li>
+                        <li><a class="footer-link" @onclick="NavigateBlogPage">Blog</a></li>
+                        <li><a class="footer-link" @onclick="NavigateContactPage">iletişim</a></li>
+                    </ul>
+                </div>
+                <!-- Services -->
+                <div class="col-lg-2 col-md-3 footer-links">
+                    <h4>Psikoloji Hizmetleri</h4>
+                    <ul>
+                        <li><a class="footer-link" @onclick="NavigatePsychologicalCounselingPage">Psikolojik Danışma</a></li>
+                        <li><a class="footer-link" @onclick="NavigateTherapyPage">Terapi</a></li>
+                        <li><a class="footer-link" @onclick="NavigateChildPsychologyPage">Çocuk Psikolojisi</a></li>
+                        <li><a class="footer-link" @onclick="NavigateStressManagementPage">Stres Yönetimi</a></li>
+                        <li><a class="footer-link" @onclick="NavigateGuidancePage">Rehberlik</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-4 col-md-12 footer-contact">
+                    <h4>İletişim Bilgileri</h4>
+                    <div class="contact-info">
+                        <div class="info-item d-flex">
+                            <i class="bi bi-geo-alt"></i>
+                            <div>
+                                <h5>Adres:</h5>
+                                <p>Çankaya/Ankara FARİLYA İŞ MERKEZİ Kızılırmak, Ufuk Ünv. Cd NO:8, 06510 </p>
+                            </div>
+                        </div>
+
+                        <div class="info-item d-flex">
+                            <i class="bi bi-telephone"></i>
+                            <div>
+                                <h5>Telefon:</h5>
+                                <p>0553 937 50 78</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item d-flex">
+                            <i class="bi bi-envelope"></i>
+                            <div>
+                                <h5>E-posta:</h5>
+                                <p>hatice@meridyenpsikoloji.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="copyright">
+                        <p>© <span>Copyright</span> <strong class="px-1 sitename">Meridyen Psikiloji</strong> <span>Tüm hakları saklıdır</span></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="social-links d-flex justify-content-md-end justify-content-center">
+                        <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scroll Top Button -->
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center" @onclick="ScrollToTop" @onclick:preventDefault="true">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Preloader -->
+<div id="preloader" style="@(showPreloader ? "" : "display: none;")"></div>
+
+@code {
+    [Inject] IJSRuntime JS { get; set; }
+
+    private bool isDropdownOpen = false;
+    private bool showScrollTop = false;
+    private bool showPreloader = true;
+    private bool isMobileNavOpen = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initMobileNav");
+            await JS.InvokeVoidAsync("hidePreloader");
+            await JS.InvokeVoidAsync("initScrollTop");
+            // Preloader'ı gizle
+            await Task.Delay(500); // Kısa bir gecikme
+            showPreloader = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnScroll(int scrollY)
+    {
+        bool shouldShow = scrollY > 100;
+        if (showScrollTop != shouldShow)
+        {
+            showScrollTop = shouldShow;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnClickOutside()
+    {
+        if (isDropdownOpen)
+        {
+            isDropdownOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleUserDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private void ToggleMobileNav()
+    {
+        isMobileNavOpen = !isMobileNavOpen;
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JS.InvokeVoidAsync("scrollToTop");
+    }
+
+    // Header dropdown navigation methods
+    private void NavigateLoginPage()
+    {
+        NavManager.NavigateTo("/login");
+    }
+
+    private void NavigateRegisterPage()
+    {
+        NavManager.NavigateTo("/register");
+    }
+
+    private void NavigateLogoutPage()
+    {
+        isDropdownOpen = false; // Dropdown'ı kapat
+        NavManager.NavigateTo("/logout");
+    }
+
+    private void NavigateProfilePage()
+    {
+        isDropdownOpen = false; // Dropdown'ı kapat
+        NavManager.NavigateTo("/profile");
+    }
+
+    private void NavigateDashboardPage()
+    {
+        isDropdownOpen = false; // Dropdown'ı kapat
+        NavManager.NavigateTo("/admin");
+    }
+
+    // Footer navigation methods - Quick Links
+    private void NavigateHomePage()
+    {
+        NavManager.NavigateTo("/");
+    }
+
+    private void NavigateAboutPage()
+    {
+        NavManager.NavigateTo("/hakkimda");
+    }
+
+    private void NavigateCvPage()
+    {
+        NavManager.NavigateTo("/Ozgecmis");
+    }
+
+    private void NavigateSpecializationsPage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    private void NavigateReservationPage()
+    {
+        NavManager.NavigateTo("/rezervasyon");
+    }
+
+    private void NavigateBlogPage()
+    {
+        NavManager.NavigateTo("/blog");
+    }
+
+    private void NavigateContactPage()
+    {
+        NavManager.NavigateTo("/iletisim");
+    }
+
+    // Footer navigation methods - Psychology Services
+    private void NavigatePsychologicalCounselingPage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    private void NavigateTherapyPage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    private void NavigateChildPsychologyPage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    private void NavigateStressManagementPage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    private void NavigateGuidancePage()
+    {
+        NavManager.NavigateTo("/Uzmanliklarimiz");
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+}

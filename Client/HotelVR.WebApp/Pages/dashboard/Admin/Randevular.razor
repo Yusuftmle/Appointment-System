@@ -1,0 +1,449 @@
+﻿@page "/admin/appointments"
+@using Application.Models
+@using Domain.Enums
+@using HotelVR.WebApp.Pages.Component
+@inject IAppointmentService AppointmentService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@layout AdminLayout
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-4">
+    <!-- Header Section -->
+    <MudPaper Class="pa-6 mb-4" Elevation="2">
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth"
+                         Size="Size.Large"
+                         Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.h4" Class="font-weight-bold text-primary">
+                        Randevu Yönetimi
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="text-secondary">
+                        Tüm randevuları görüntüle ve yönet
+                    </MudText>
+                </div>
+            </MudStack>
+
+            <MudStack Row Spacing="2">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="RefreshAppointments"
+                           Disabled="isLoading">
+                    Yenile
+                </MudButton>
+
+                <MudChip T="string"
+                         Label="true"
+                         Color="Color.Info"
+                         Icon="@Icons.Material.Filled.Numbers">
+                    Toplam: @appointments.Count
+                </MudChip>
+
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="3">
+                <MudSelect T="ReservationStatus?"
+                           @bind-Value="selectedStatus"
+                           Label="Durum Filtresi"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Clearable="true"
+                           OnSelectionChanged="ApplyFilters">
+                    <MudSelectItem T="ReservationStatus?" Value="@((ReservationStatus?)null)">Tümü</MudSelectItem>
+                    <MudSelectItem T="ReservationStatus?" Value="ReservationStatus.Pending">Beklemede</MudSelectItem>
+                    <MudSelectItem T="ReservationStatus?" Value="ReservationStatus.Confirmed">Onaylandı</MudSelectItem>
+                    <MudSelectItem T="ReservationStatus?" Value="ReservationStatus.Canceled">İptal Edildi</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudSelect T="AppointmentType?"
+                           @bind-Value="selectedAppointmentType"
+                           Label="Type Filtresi"
+                           Variant="Variant.Outlined"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Clearable="true"
+                           OnSelectionChanged="ApplyFilters">
+                    <MudSelectItem T="AppointmentType?" Value="@((AppointmentType?)null)">Tümü</MudSelectItem>
+                    <MudSelectItem T="AppointmentType?" Value="AppointmentType.FaceToFace">Yuz Yuze</MudSelectItem>
+                    
+                    <MudSelectItem T="AppointmentType?" Value="AppointmentType.Online">Online</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudTextField @bind-Value="searchText"
+                              Label="Arama"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              OnKeyUp="@((e) => { if (e.Key == "Enter") ApplyFilters(); })" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudDatePicker @bind-Date="selectedDate"
+                               Label="Tarih Filtresi"
+                               Variant="Variant.Outlined"
+                               Clearable="true" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Secondary"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.FilterAlt"
+                           OnClick="ApplyFilters">
+                    Filtrele
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Loading State -->
+    @if (isLoading)
+    {
+        <MudPaper Class="pa-8 text-center" Elevation="1">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Typo="Typo.h6" Class="mt-4">Randevular yükleniyor...</MudText>
+        </MudPaper>
+    }
+    else if (!filteredAppointments.Any())
+    {
+        <!-- Empty State -->
+        <MudPaper Class="pa-8 text-center" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Filled.EventBusy"
+                     Size="Size.Large"
+                     Color="Color.Secondary"
+                     Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="text-secondary mb-2">
+                Randevu bulunamadı
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-secondary">
+                Arama kriterlerinizi değiştirmeyi deneyin
+            </MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Appointments Grid -->
+        <MudGrid>
+            @foreach (var appointment in GetPagedAppointments())
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Elevation="2"
+                             Class="appointment-card cursor-pointer hover-elevation-4 transition-all"
+                             @onclick="() => OpenAppointmentDetail(appointment)"
+                             Style="min-height: 280px;">
+
+                        <!-- Card Header -->
+                        <MudCardHeader Class="pb-2">
+                            <CardHeaderContent>
+                                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudChip T="string"
+                                             Color="GetStatusColor(appointment.ReservationStatus == default ? ReservationStatus.Pending : appointment.ReservationStatus)"
+                                             Size="Size.Small"
+                                             Icon="GetStatusIcon(appointment.ReservationStatus == default ? ReservationStatus.Pending : appointment.ReservationStatus)">
+                                        @GetStatusText(appointment.ReservationStatus == default ? ReservationStatus.Pending : appointment.ReservationStatus)
+                                    </MudChip>
+
+                                    <MudIconButton Icon="@Icons.Material.Filled.MoreVert"
+                                                   Size="Size.Small"
+                                                   Color="Color.Default" />
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+
+                        <!-- Card Content -->
+                        <MudCardContent Class="pt-0">
+                            <MudStack Spacing="3">
+                                <!-- Service Name -->
+                                <div>
+                                    <MudText Typo="Typo.h6" Class="font-weight-bold text-primary mb-1">
+                                        @appointment.ServiceName
+                                    </MudText>
+                                   
+                                </div>
+                                <div>
+                                    <MudText Typo="Typo.h6" Class="font-weight-bold text-primary mb-1">
+                                        @appointment.appointmentType
+                                    </MudText>
+
+                                </div>
+
+                                <!-- Date & Time -->
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule"
+                                             Size="Size.Small"
+                                             Color="Color.Secondary" />
+                                    <div>
+                                        <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                            @appointment.AppointmentDate.ToString("dd MMM yyyy")
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Class="text-secondary">
+                                            @appointment.AppointmentDate.ToString("HH:mm")
+                                        </MudText>
+                                    </div>
+                                </MudStack>
+
+                                <!-- Customer Info -->
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person"
+                                             Size="Size.Small"
+                                             Color="Color.Secondary" />
+                                    <div>
+                                        <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                            @appointment.UserName
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Class="text-secondary">
+                                            @appointment.PhoneNumber
+                                        </MudText>
+                                    </div>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+
+                        <!-- Card Actions -->
+                        <MudCardActions Class="pt-0">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       FullWidth="true"
+                                       OnClick="() => OpenAppointmentDetail(appointment)">
+                                Detayları Görüntüle
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <!-- Pagination -->
+        @if (filteredAppointments.Count() > pageSize)
+        {
+            <MudPaper Class="pa-4 mt-6 text-center" Elevation="1" Style="border-radius: 16px;">
+                <MudPagination Count="@totalPages"
+                               @bind-Selected="currentPage"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               ShowFirstButton="true"
+                               ShowLastButton="true" />
+                <MudText Typo="Typo.body2" Color="Color.Tertiary" Class="mt-2">
+                    @GetPaginationInfo()
+                </MudText>
+            </MudPaper>
+        }
+    }
+</MudContainer>
+
+@code {
+    private List<AppointmentDto> appointments = new();
+    private List<AppointmentDto> filteredAppointments = new();
+    private bool isLoading = false;
+
+    // Pagination
+    private int currentPage = 1;
+    private int pageSize = 8;
+    private int totalPages => (int)Math.Ceiling((double)filteredAppointments.Count() / pageSize);
+
+    // Filter properties
+    private ReservationStatus? selectedStatus;
+
+    private AppointmentType? selectedAppointmentType;
+    private string searchText = string.Empty;
+    private DateTime? selectedDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointments();
+    }
+
+    private string GetPaginationInfo()
+    {
+        if (filteredAppointments.Count() == 0)
+            return "Gösterilecek randevu bulunamadı";
+
+        var startItem = (currentPage - 1) * pageSize + 1;
+        var endItem = Math.Min(currentPage * pageSize, filteredAppointments.Count());
+        var totalItems = filteredAppointments.Count();
+
+        return $"{startItem}-{endItem} / {totalItems} Randevu Gösteriliyor";
+    }
+
+    private List<AppointmentDto> GetPagedAppointments()
+    {
+        return filteredAppointments
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private async Task LoadAppointments()
+    {
+        if (isLoading) return;
+
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            appointments = await AppointmentService.GetAllAppointmentsAsync() ?? new();
+
+            ApplyFilters();
+
+            Snackbar.Add($"{appointments.Count} randevu yüklendi", Severity.Success);
+        }
+        catch (TaskCanceledException)
+        {
+            Snackbar.Add("İstek zaman aşımına uğradı", Severity.Warning);
+            appointments = new();
+            filteredAppointments = new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"LoadAppointments Error: {ex.Message}");
+            Snackbar.Add($"Randevuları yüklerken hata: {ex.Message}", Severity.Error);
+            appointments = new();
+            filteredAppointments = new();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshAppointments()
+    {
+        await LoadAppointments();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredAppointments = appointments.Where(a =>
+        {
+            // Status filter
+            if (selectedStatus.HasValue && a.ReservationStatus != selectedStatus.Value)
+                return false;
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var search = searchText.ToLower();
+                if (!a.ServiceName.ToLower().Contains(search) &&
+                    !a.UserName.ToLower().Contains(search) &&
+                    !a.PhoneNumber.Contains(search))
+                    return false;
+            }
+
+            // Date filter
+            if (selectedDate.HasValue)
+            {
+                if (a.AppointmentDate.Date != selectedDate.Value.Date)
+                    return false;
+            }
+            if(selectedAppointmentType.HasValue&& a.appointmentType!= selectedAppointmentType.Value)
+            {
+                return false;  
+            }
+
+
+            return true;
+        }).OrderByDescending(x => x.AppointmentDate).ToList();
+
+        // Sayfa numarasını sıfırla
+        currentPage = 1;
+        StateHasChanged();
+    }
+
+    private async Task OpenAppointmentDetail(AppointmentDto appointment)
+    {
+        if (isLoading) return;
+
+        try
+        {
+            var detail = await AppointmentService.GetByIdAppointmentsDetail(appointment.Id);
+
+            if (detail != null)
+            {
+                var parameters = new DialogParameters
+                    {
+                        ["Detail"] = detail,
+                        ["OnStatusChanged"] = EventCallback.Factory.Create<AppointmentDto>(this, OnAppointmentStatusChanged)
+                    };
+
+                var options = new DialogOptions
+                    {
+                        CloseButton = true,
+                        MaxWidth = MaxWidth.Medium,
+                        FullWidth = true,
+                        BackdropClick = false
+                    };
+
+                var dialog = DialogService.Show<AppointmentDetailDialog>("Randevu Detayı", parameters, options);
+                await dialog.Result;
+            }
+            else
+            {
+                Snackbar.Add("Randevu detayı bulunamadı", Severity.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"OpenAppointmentDetail Error: {ex.Message}");
+            Snackbar.Add($"Randevu detayı yüklenemedi: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnAppointmentStatusChanged(AppointmentDto updatedAppointment)
+    {
+        var existingAppointment = appointments.FirstOrDefault(a => a.Id == updatedAppointment.Id);
+        if (existingAppointment != null)
+        {
+            existingAppointment.ReservationStatus = updatedAppointment.ReservationStatus;
+        }
+
+        await RefreshAppointments();
+        ApplyFilters();
+        StateHasChanged();
+    }
+
+    private Color GetStatusColor(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Confirmed => Color.Success,
+            ReservationStatus.Canceled => Color.Error,
+            ReservationStatus.Pending => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusText(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Confirmed => "Onaylandı",
+            ReservationStatus.Canceled => "İptal Edildi",
+            ReservationStatus.Pending => "Beklemede",
+            _ => "Bilinmiyor"
+        };
+    }
+
+    private string GetStatusIcon(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Confirmed => Icons.Material.Filled.CheckCircle,
+            ReservationStatus.Canceled => Icons.Material.Filled.Cancel,
+            ReservationStatus.Pending => Icons.Material.Filled.Schedule,
+            _ => Icons.Material.Filled.Help
+        };
+    }
+}

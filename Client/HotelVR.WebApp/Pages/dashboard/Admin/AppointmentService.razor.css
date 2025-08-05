@@ -1,0 +1,55 @@
+﻿.mini-calendar-day-header {
+    width: 14.28%;
+    text-align: center;
+    font-weight: 500;
+    color: #757575;
+}
+
+.mini-calendar-day {
+    width: 14.28%;
+    aspect-ratio: 1;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.mini-calendar-day-number {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+}
+
+.today {
+    background-color: #e0e0e0;
+    font-weight: bold;
+}
+
+.selected-day .mini-calendar-day-number {
+    background-color: var(--mud-palette-primary);
+    color: white;
+}
+
+.available-day:hover .mini-calendar-day-number {
+    background-color: var(--mud-palette-primary-lighten);
+    color: white;
+}
+
+.disabled-day {
+    color: #bdbdbd;
+    cursor: not-allowed;
+}
+
+.weekend-day {
+    color: var(--mud-palette-error);
+}
+
+.other-month-day {
+    color: #e0e0e0;
+    cursor: default;
+}

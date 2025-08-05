@@ -1,0 +1,219 @@
+﻿@page "/Uzmanliklarimiz"
+@inject IJSRuntime JSRuntime
+
+<div class="page-title">
+    <div class="container">
+        <div class="breadcrumbs">
+            <ol>
+                <li><a href="/">Anasayfa</a></li>
+                <li><a href="/Uzmanliklarimiz">Uzmanliklarimiz</a></li>
+            </ol>
+        </div>
+    </div>
+</div>
+<br />
+<br />
+
+<!-- Services Section -->
+<section id="services" class="services section">
+    <!-- Section Title -->
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Hizmetlerimiz</h2>
+        <p>Sizlere en iyi şekilde destek olabilmek için uzman psikolojik danışmanlık hizmetleri sunuyoruz.</p>
+    </div><!-- End Section Title -->
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-item item-cyan position-relative">
+                    <div class="icon">
+                        <i class="fas fa-user-friends fa-3x"></i>
+                    </div>
+                    <h3>Bireysel Danışmanlık</h3>
+                    <p>Kişisel gelişim, stres yönetimi, kaygı ve depresyon gibi konularda bire bir danışmanlık hizmeti sunuyoruz.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-item item-orange position-relative">
+                    <div class="icon">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <h3>Aile ve Çift Terapisi</h3>
+                    <p>Aile içi iletişim sorunları, evlilik problemleri ve çiftler arası ilişki yönetimi üzerine profesyonel destek sağlıyoruz.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-item item-teal position-relative">
+                    <div class="icon">
+                        <i class="fas fa-child fa-3x"></i>
+                    </div>
+                    <h3>Çocuk ve Ergen Danışmanlığı</h3>
+                    <p>Çocuk ve ergenlerde yaşanan sosyal, duygusal ve akademik sorunlar için özel danışmanlık hizmetleri.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="service-item item-red position-relative">
+                    <div class="icon">
+                        <i class="fas fa-brain fa-3x"></i>
+                    </div>
+                    <h3>Kaygı ve Depresyon</h3>
+                    <p>Kaygı bozuklukları, depresyon ve duygudurum problemleri için etkili psikolojik destek.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                <div class="service-item item-indigo position-relative">
+                    <div class="icon">
+                        <i class="fas fa-heartbeat fa-3x"></i>
+                    </div>
+                    <h3>Stres Yönetimi</h3>
+                    <p>Yoğun iş temposu, özel hayat dengesi ve stres kaynaklı problemlerin üstesinden gelmenizde destek oluyoruz.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                <div class="service-item item-pink position-relative">
+                    <div class="icon">
+                        <i class="fas fa-comments fa-3x"></i>
+                    </div>
+                    <h3>Online Danışmanlık</h3>
+                    <p>Dilediğiniz yerden görüntülü görüşme ile online psikolojik danışmanlık hizmeti.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section><!-- /Services Section -->
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetSeoMetaData();
+        }
+    }
+
+    private async Task SetSeoMetaData()
+    {
+        try
+        {
+            // Sayfa başlığı
+            await JSRuntime.InvokeVoidAsync("setTitle", "Uzman Psikolojik Danışmanlık Hizmetlerimiz | Ankara Çankaya");
+
+            // Ana meta description
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "description",
+                "Ankara'da bireysel danışmanlık, aile terapisi, çocuk psikolojisi, kaygı tedavisi ve online danışmanlık hizmetleri. Çankaya, Yenimahalle ve Oran'da uzman psikolog desteği.");
+
+            // Sayfa spesifik keywords
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "keywords",
+                "bireysel psikolojik danışmanlık Ankara, aile terapisi Çankaya, çocuk psikoloğu Ankara, kaygı tedavisi Yenimahalle, online terapi hizmeti, stres yönetimi Ankara, depresyon terapisi Çankaya, çift terapisi Oran, ergen psikoloğu Ankara");
+
+            // Robots meta
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "robots",
+                "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+
+            // Geo targeting
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "geo.region", "TR-06");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "geo.placename", "Ankara, Çankaya");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "geo.position", "39.9334;32.8597");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "ICBM", "39.9334, 32.8597");
+
+            // Language
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "language", "Turkish");
+            await JSRuntime.InvokeVoidAsync("setMetaTagHttpEquiv", "content-language", "tr");
+
+            // Author ve diğer meta bilgiler
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "author", "Ankara Psikolojik Danışmanlık Merkezi");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "revisit-after", "7 days");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "rating", "general");
+
+            // Open Graph meta tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:title",
+                "Uzman Psikolojik Danışmanlık Hizmetlerimiz | Ankara", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:description",
+                "Bireysel danışmanlık, aile terapisi, çocuk psikolojisi ve online danışmanlık hizmetleri. Ankara'da profesyonel psikolojik destek.", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:type", "website", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:url", "https://yoursite.com/Uzmanliklarimiz", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:locale", "tr_TR", "property");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "og:site_name", "Ankara Psikolojik Danışmanlık", "property");
+
+            // Twitter Card meta tags
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:card", "summary_large_image");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:title",
+                "Uzman Psikolojik Danışmanlık Hizmetlerimiz | Ankara");
+            await JSRuntime.InvokeVoidAsync("setMetaTag", "twitter:description",
+                "Bireysel danışmanlık, aile terapisi, çocuk psikolojisi ve online danışmanlık hizmetleri. Ankara'da profesyonel psikolojik destek.");
+
+            // Canonical URL
+            await JSRuntime.InvokeVoidAsync("setCanonical", "https://yoursite.com/Uzmanliklarimiz");
+
+            // Structured Data (JSON-LD)
+            var structuredData = @"{
+                ""@context"": ""https://schema.org"",
+                ""@type"": ""ProfessionalService"",
+                ""name"": ""Ankara Psikolojik Danışmanlık Hizmetleri"",
+                ""description"": ""Ankara'da bireysel danışmanlık, aile terapisi, çocuk psikolojisi ve online danışmanlık hizmetleri sunan uzman psikolog merkezi."",
+                ""url"": ""https://yoursite.com/Uzmanliklarimiz"",
+                ""serviceType"": ""Psychological Counseling"",
+                ""areaServed"": {
+                    ""@type"": ""City"",
+                    ""name"": ""Ankara"",
+                    ""addressRegion"": ""Ankara"",
+                    ""addressCountry"": ""TR""
+                },
+                ""address"": {
+                    ""@type"": ""PostalAddress"",
+                    ""addressLocality"": ""Çankaya"",
+                    ""addressRegion"": ""Ankara"",
+                    ""addressCountry"": ""TR""
+                },
+                ""hasOfferCatalog"": {
+                    ""@type"": ""OfferCatalog"",
+                    ""name"": ""Psikolojik Danışmanlık Hizmetleri"",
+                    ""itemListElement"": [
+                        {
+                            ""@type"": ""Offer"",
+                            ""itemOffered"": {
+                                ""@type"": ""Service"",
+                                ""name"": ""Bireysel Danışmanlık"",
+                                ""description"": ""Kişisel gelişim, stres yönetimi, kaygı ve depresyon konularında bire bir danışmanlık""
+                            }
+                        },
+                        {
+                            ""@type"": ""Offer"",
+                            ""itemOffered"": {
+                                ""@type"": ""Service"",
+                                ""name"": ""Aile ve Çift Terapisi"",
+                                ""description"": ""Aile içi iletişim sorunları ve çiftler arası ilişki yönetimi""
+                            }
+                        },
+                        {
+                            ""@type"": ""Offer"",
+                            ""itemOffered"": {
+                                ""@type"": ""Service"",
+                                ""name"": ""Çocuk ve Ergen Danışmanlığı"",
+                                ""description"": ""Çocuk ve ergenlerde sosyal, duygusal ve akademik sorunlar için danışmanlık""
+                            }
+                        },
+                        {
+                            ""@type"": ""Offer"",
+                            ""itemOffered"": {
+                                ""@type"": ""Service"",
+                                ""name"": ""Online Danışmanlık"",
+                                ""description"": ""Görüntülü görüşme ile online psikolojik danışmanlık hizmeti""
+                            }
+                        }
+                    ]
+                },
+                ""priceRange"": ""$$"",
+                ""telephone"": ""+90-312-XXX-XXXX"",
+                ""openingHours"": ""Mo-Fr 09:00-18:00"",
+                ""paymentAccepted"": ""Cash, Credit Card"",
+                ""currenciesAccepted"": ""TRY""
+            }";
+
+            await JSRuntime.InvokeVoidAsync("addPageSchema", structuredData);
+        }
+        catch (Exception ex)
+        {
+            // Hata durumunda sessizce devam et
+            Console.WriteLine($"SEO meta data error: {ex.Message}");
+        }
+    }
+}
