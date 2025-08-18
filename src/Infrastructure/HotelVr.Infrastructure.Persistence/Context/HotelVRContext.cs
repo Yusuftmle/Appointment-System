@@ -7,45 +7,38 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 
 namespace HotelRvDbContext.Infrastructure.Persistence.Context
 {
     public class HotelVRContext: DbContext
     {
-
+       
         public const String DEFAULT_SCHEMA = "dbo";
 
-        public HotelVRContext()
+        // Sadece bu constructor yeterli - DI sistemi otomatik inject edecek
+        public HotelVRContext(DbContextOptions<HotelVRContext> options) : base(options)
         {
-            
         }
-
-        public HotelVRContext(DbContextOptions options) : base(options)
-        {
-
-        }
-
-        public DbSet<User> users { get; set; }
+       
+        // DbSet'ler
+        public DbSet<User> Users { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Availability> Availabilities { get; set; }
-        public DbSet<PasswordResetToken > passwordResetTokens { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<BlogPost> BlogPosts { get; set; }
         public DbSet<BlogTag> BlogTags { get; set; }
         public DbSet<BlogPostTag> BlogPostTags { get; set; }
 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var connStr = "Server=YUSUF\\YUSUF;Database=Blazorpsikolog;User Id=sa;Password=password1;TrustServerCertificate=True; Encrypt=false";
-            optionsBuilder.UseSqlServer(connStr);
-        }
+        // OnConfiguring metodunu kaldırın - artık gerek yok
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-            // Tüm entity türlerini döner
+
+            // Soft delete için global query filter
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
@@ -53,21 +46,24 @@ namespace HotelRvDbContext.Infrastructure.Persistence.Context
                     var parameter = Expression.Parameter(entityType.ClrType, "e");
                     var isDeletedProperty = Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
                     var filter = Expression.Lambda(Expression.Equal(isDeletedProperty, Expression.Constant(false)), parameter);
-
                     modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
                 }
             }
         }
+
+        // SaveChanges override'ları aynı kalabilir
         public override int SaveChanges()
         {
             OnBeforeSave();
             return base.SaveChanges();
         }
+
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             OnBeforeSave();
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
+
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
             OnBeforeSave();
@@ -78,14 +74,13 @@ namespace HotelRvDbContext.Infrastructure.Persistence.Context
         {
             OnBeforeSave();
             return base.SaveChangesAsync(cancellationToken);
-
         }
 
         private void OnBeforeSave()
         {
             var addedEntities = ChangeTracker.Entries()
-                                              .Where(i => i.State == EntityState.Added)
-                                              .Select(i => (BaseEntity)i.Entity);
+                                           .Where(i => i.State == EntityState.Added)
+                                           .Select(i => (BaseEntity)i.Entity);
             PrepareAddedEntities(addedEntities);
         }
 
