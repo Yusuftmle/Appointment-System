@@ -44,7 +44,11 @@ namespace HotelApi.Infrastructure.Middleware
             // General Crawlers
             "applebot", "crawler", "spider", "scraper", "bot", "archiver",
             "fetch", "wget", "curl", "libwww", "lwp", "httrack", "python-requests",
-            "okhttp", "java", "apache-httpclient", "node-fetch", "axios"
+            "okhttp", "java", "apache-httpclient", "node-fetch", "axios",
+
+            "postmanruntime", "postman", "newman", // Postman varyantları
+           "insomnia", "paw", "httpie", "rest-client", // Diğer REST istemcileri
+           "thunder client", "rapidapi", "restlet" // Ek API test araçları
         };
 
         // Known Bot IP Ranges (Major search engines)
@@ -387,7 +391,10 @@ namespace HotelApi.Infrastructure.Middleware
                 // SEO and bot-friendly headers
                 context.Response.ContentType = "text/html; charset=utf-8";
                 context.Response.Headers.Add("X-Robots-Tag", "index, follow");
-                context.Response.Headers.Add("X-Bot-Served", botInfo.BotType);
+               context.Response.Headers.Add("X-Bot-Served", 
+    Encoding.ASCII.GetString(Encoding.ASCII.GetBytes(botInfo.BotType)));
+
+
 
                 // Serve the file
                 await context.Response.SendFileAsync(staticFilePath);
@@ -404,6 +411,7 @@ namespace HotelApi.Infrastructure.Middleware
                 return false;
             }
         }
+      
 
         private bool IsInvalidSlug(string slug)
         {
