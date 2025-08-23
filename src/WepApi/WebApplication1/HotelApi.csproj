@@ -24,8 +24,4 @@
     <ProjectReference Include="..\..\Infrastructure\HotelVr.Infrastructure.Persistence\HotelRv.Infrastructure.Persistence.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\blog-static\" />
-  </ItemGroup>
-
 </Project>

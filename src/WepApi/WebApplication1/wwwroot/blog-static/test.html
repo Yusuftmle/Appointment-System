@@ -1,0 +1,16 @@
+﻿# wwwroot/blog-static/ klasörüne test.html oluşturalım
+$testHtml = @"
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Yazısı</title>
+    <meta name="description" content="Bu bir test yazısıdır">
+</head>
+<body>
+    <h1>Test Başlık</h1>
+    <p>Bu bir test yazısıdır. Middleware çalışıyor!</p>
+</body>
+</html>
+"@
+
+$testHtml | Out-File -Encoding UTF8 "C:\Users\hucks\OneDrive\Masaüstü\terapis\src\WepApi\WebApplication1\wwwroot\blog-static\test.html"
