@@ -1,13 +1,15 @@
+using System.Threading.RateLimiting;
 using Application.Extension;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using HotelApi.Infrastructure;
-using HotelApi.Infrastructure.SignalR;
-using Microsoft.AspNetCore.ResponseCompression;
-using HotelRvDbContext.Infrastructure.Persistence.Extensions;
-using Microsoft.OpenApi.Models;
-using HotelRv.Infrastructure.Persistence.Extensions;
 using HotelApi.Infrastructure.Middleware;
+using HotelApi.Infrastructure.SignalR;
+using HotelRv.Infrastructure.Persistence.Extensions;
+using HotelRvDbContext.Infrastructure.Persistence.Extensions;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.OpenApi.Models;
 
 
 namespace WebApplication1
@@ -66,7 +68,27 @@ namespace WebApplication1
             builder.Services.AddInfrastructureRegistration(builder.Configuration);
             builder.Services.ConfigureAuth(builder.Configuration);
             builder.Services.AddSignalR();
-           
+            builder.Services.AddRateLimiter(options =>
+            {
+                // Global limit
+                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: partition => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 100, // 100 request
+                            Window = TimeSpan.FromMinutes(1), // 1 dakikada
+                            QueueLimit = 0
+                        }));
+
+                // Login için özel limit
+                options.AddFixedWindowLimiter("loginLimiter", opt =>
+                {
+                    opt.PermitLimit = 5;
+                    opt.Window = TimeSpan.FromMinutes(1);
+                    opt.QueueLimit = 0;
+                });
+            });
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddResponseCompression(opts =>
             {
@@ -84,7 +106,7 @@ namespace WebApplication1
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseRateLimiter();
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseAuthentication();
