@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotelVR.WebApp", "Client\Ho
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "src\Core\Application\Application.csproj", "{FFCBF037-6050-4E9D-BEE2-463FF102590C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HotelVR.Common", "HotelVR.Common", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelVR.Common", "HotelVR.Common\HotelVR.Common.csproj", "{B23AEF6E-696B-FCCE-A6B9-47FB170D8366}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,10 @@ Global
 		{FFCBF037-6050-4E9D-BEE2-463FF102590C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFCBF037-6050-4E9D-BEE2-463FF102590C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFCBF037-6050-4E9D-BEE2-463FF102590C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B23AEF6E-696B-FCCE-A6B9-47FB170D8366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B23AEF6E-696B-FCCE-A6B9-47FB170D8366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B23AEF6E-696B-FCCE-A6B9-47FB170D8366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B23AEF6E-696B-FCCE-A6B9-47FB170D8366}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +74,7 @@ Global
 		{0FB31C76-B4FB-426E-BB4F-2A94B0C6DAA3} = {65889279-681C-4D9E-BCA5-A24D8C37D7CF}
 		{65DACD7E-FE03-4E58-B01E-B2963F9E7C3E} = {1CAD4CA7-1DDC-45AB-862A-26C22C34F796}
 		{FFCBF037-6050-4E9D-BEE2-463FF102590C} = {4D526065-1372-4DF7-97F3-BADF8A2F4A06}
+		{B23AEF6E-696B-FCCE-A6B9-47FB170D8366} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7F1BDFA6-2BBA-44E3-BA1C-CCEE56F209FC}

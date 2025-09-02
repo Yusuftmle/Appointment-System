@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\HotelVR.Common\HotelVR.Common.csproj" />
     <ProjectReference Include="..\..\Core\Application\Application.csproj" />
     <ProjectReference Include="..\..\Infrastructure\HotelVr.Infrastructure.Persistence\HotelRv.Infrastructure.Persistence.csproj" />
   </ItemGroup>
