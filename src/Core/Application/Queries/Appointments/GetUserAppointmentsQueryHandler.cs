@@ -25,8 +25,6 @@ namespace Application.Queries.Appointments
 
             query = query
                 .AsNoTracking()
-                .Include(i => i.User)
-                .Include(i => i.Service)
                 .Where(i => i.UserId == request.UserId && !i.IsDeleted);
 
             var result = await query

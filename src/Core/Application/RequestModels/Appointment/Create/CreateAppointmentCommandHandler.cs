@@ -30,22 +30,21 @@ namespace Application.RequestModels.Appointment.Create
             _serviceRepository = serviceRepository;
             _logger = logger;
         }
-
+        // added .ConfigureAwait(false) 
         public async Task<Guid> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
         {
-            await _unitOfWork.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync().ConfigureAwait(false);
 
             try
             {
                 var existAppointment = await _appointmentRepository.GetSingleAsync(
-    i => i.AppointmentDateTime == request.AppointmentDateTime,
-    true,
-    cancellationToken);
+                 i => i.AppointmentDateTime == request.AppointmentDateTime,true,
+                   cancellationToken).ConfigureAwait(false);
 
                 if (existAppointment != null)
                     throw new DataBaseValidationException("Appointment already exist");
 
-                var service = await _serviceRepository.GetByIdAsync(request.ServiceId);
+                var service = await _serviceRepository.GetByIdAsync(request.ServiceId).ConfigureAwait(false);
                 if (service == null)
                     throw new DataBaseValidationException("Service not found");
 
@@ -53,19 +52,19 @@ namespace Application.RequestModels.Appointment.Create
 
                 var dbAppointment = mapper.Map<Domain.Models.Appointment>(request);
 
-                await _appointmentRepository.AddAsync(dbAppointment);
-                await _unitOfWork.CommitTransactionAsync();
+                await _appointmentRepository.AddAsync(dbAppointment).ConfigureAwait(false);
+                await _unitOfWork.CommitTransactionAsync().ConfigureAwait(false);
                 return dbAppointment.Id;
             }
             catch (DataBaseValidationException ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await _unitOfWork.RollbackTransactionAsync().ConfigureAwait(false);
                 _logger.LogWarning(ex, "Validation hatası oluştu: {Message}", ex.Message);
                 throw new DataBaseValidationException(ex.Message, ex.InnerException);
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await _unitOfWork.RollbackTransactionAsync().ConfigureAwait(false);
                 _logger.LogError(ex, "Bilinmeyen hata oluştu: {Message}", ex.Message);
                 throw new Exception("An error occurred while creating the appointment.", ex);
             }

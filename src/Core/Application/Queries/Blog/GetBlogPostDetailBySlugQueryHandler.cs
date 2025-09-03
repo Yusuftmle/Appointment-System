@@ -26,9 +26,6 @@ namespace Application.Queries.Blog
 
             query = query
                 .AsNoTracking()
-                .Include(i => i.BlogPostTags)
-                    .ThenInclude(bpt => bpt.BlogTag)
-                .Include(i => i.User)
                 .Where(i => i.Slug == request.Slug && !i.IsDeleted); // filtre önemli!
 
             var result = await query.Select(i => new BlogPostDto()

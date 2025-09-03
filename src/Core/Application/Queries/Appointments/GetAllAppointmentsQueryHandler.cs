@@ -12,48 +12,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Queries.Appointments
 {
-    public class GetAllAppointmentsQueryHandler : IRequestHandler<GetAllAppointmentsQuery, List<AppointmentDto>>
+    public class GetAllAppointmentsQueryHandler_Optimized : IRequestHandler<GetAllAppointmentsQuery, List<AppointmentDto>>
     {
         private readonly IAppointmentRepository appointmentRepository;
-        private readonly IMapper mapper;
+       
 
-        public GetAllAppointmentsQueryHandler(IAppointmentRepository appointmentRepository, IMapper mapper)
+        public GetAllAppointmentsQueryHandler_Optimized(IAppointmentRepository appointmentRepository)
         {
             this.appointmentRepository = appointmentRepository;
-            this.mapper = mapper;
         }
 
         public async Task<List<AppointmentDto>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
         {
-
-            var query = appointmentRepository.AsQueryable();
-
-            query = query
+            // ✅ Include'lar kaldırıldı - Select otomatik join yapacak
+            var result = await appointmentRepository.AsQueryable()
                 .AsNoTracking()
-                .Include(i => i.User)
-                .Include(i => i.Service)
-                .OrderByDescending(i=>i.AppointmentDateTime)
-                .Where(i => !i.IsDeleted);
-
-            var result = await query
-                .Select(i => new AppointmentDto()
+                .Where(i => !i.IsDeleted)                    // ✅ Where önce - index kullanımı
+                .OrderByDescending(i => i.AppointmentDateTime)
+                .Select(i => new AppointmentDto()            // ✅ EF Core otomatik join yapacak
                 {
-                    UserName = i.User.FullName,
+                    UserName = i.User.FullName,              // JOIN Users ON...
                     Id = i.Id,
                     UserId = i.UserId,
                     ServiceId = i.ServiceId,
-                    ServiceName = i.Service.Name,
-                 
+                    ServiceName = i.Service.Name,            // JOIN Services ON...
                     AppointmentDate = i.AppointmentDateTime,
-                    
-                    PhoneNumber  =i.User.PhoneNumber,
+                    PhoneNumber = i.User.PhoneNumber,
                     ReservationStatus = i.Status,
                     appointmentType = i.Type,
-
                 })
                 .ToListAsync(cancellationToken);
 
             return result;
+
+            
         }
     }
 }

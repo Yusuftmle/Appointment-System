@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Models;
 using Application.Repositories.Interfaces;
 using AutoMapper;
+using Domain.Models;
 using HotelRvDbContext.Infrastructure.Persistence.Repositories;
 using MediatR;
 
@@ -25,7 +26,8 @@ namespace Application.Queries.user
         public async Task<List<UserDto>> Handle(AllUserListQuery request, CancellationToken cancellationToken)
         {
             var User = await _userRepository.GetAll();
-            return await Task.FromResult(mapper.Map<List<UserDto>>(User));
+           
+            return mapper.Map<List<UserDto>>(User);
         }
     }
 }

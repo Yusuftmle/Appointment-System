@@ -63,7 +63,7 @@ namespace Application.Queries.ResetPassword
                 // 4. Save token to database
                 var passwordResetToken = new PasswordResetToken(request.Email, resetToken, expirationDate);
                 await _tokenRepository.AddAsync(passwordResetToken);
-                // UnitOfWork kullandığın için burada SaveChanges çağırma
+                // UnitOfWork kullandığın için burada SaveChanges çağırmamaliyiz
                 // await _unitOfWork.SaveChangesAsync();
 
                 // 5. Send email

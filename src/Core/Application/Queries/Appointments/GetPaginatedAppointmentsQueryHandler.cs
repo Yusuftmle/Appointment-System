@@ -22,13 +22,12 @@ namespace Application.Queries.Appointments
         {
             AppointmentRepository = appointmentRepository;
         }
-
+        //deleted Include
         public async Task<PagedViewModel<AppointmentDto>> Handle(GetPaginatedAppointmentsQuery request, CancellationToken cancellationToken)
         {
             var query = AppointmentRepository.AsQueryable()
                         .AsNoTracking()
-                        .Include(i => i.User)
-                        .Include(i => i.Service)
+                       
                         .Where(i => !i.IsDeleted);
 
             // Eğer UserId varsa filtre uygula

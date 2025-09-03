@@ -25,9 +25,9 @@ namespace Application.RequestModels.Appointment.Delete
         {
             try
             {
-                await _unitOfWork.BeginTransactionAsync();
+                await _unitOfWork.BeginTransactionAsync().ConfigureAwait(false);
 
-                var service = await _appointmentRepository.GetByIdAsync(request.Id);
+                var service = await _appointmentRepository.GetByIdAsync(request.Id).ConfigureAwait(false);
 
                 if (service == null)
                     throw new DataBaseValidationException("Blog Bulunamadi");
@@ -35,15 +35,15 @@ namespace Application.RequestModels.Appointment.Delete
                 // Soft delete işlemi
                 service.IsDeleted = true;
 
-                await _appointmentRepository.UpdateAsync(service);
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
+                await _appointmentRepository.UpdateAsync(service).ConfigureAwait(false);
+                await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+                await _unitOfWork.CommitTransactionAsync().ConfigureAwait(false);
 
                 return service.Id;
             }
             catch
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                await _unitOfWork.RollbackTransactionAsync().ConfigureAwait(false);
                 throw new DataBaseValidationException("Randevu silinirken bir hata oluştu.");
             }
         }

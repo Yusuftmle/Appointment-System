@@ -29,10 +29,8 @@ namespace Application.Queries.Blog
             var query = blogPostRepository.AsQueryable();
 
             query = query
-                .AsNoTracking()
-                .Include(i => i.BlogPostTags)
-                    .ThenInclude(pt => pt.BlogTag) // Tek seferde include
-                .Include(i => i.User);
+                .AsNoTracking();
+             
 
             var list = query.Select(i => new BlogPostDto()
             {

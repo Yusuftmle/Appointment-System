@@ -32,7 +32,7 @@ namespace Application.Queries.User
             try
             {
                 var query = _userRepository.AsQueryable()
-                    .Include(i => i.Appointments)
+                    // .Include(i => i.Appointments) Deleted Include
                     .Where(i => i.Id == request.Id && !i.IsDeleted);
 
                 var result = await query.Select(i => new UserDto

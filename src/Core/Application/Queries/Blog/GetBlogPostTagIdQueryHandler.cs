@@ -22,7 +22,6 @@ public class GetBlogPostTagIdQueryHandler : IRequestHandler<GetBlogPostTagIdQuer
         try
         {
             var query = blogPostTagRepository.AsQueryable()
-                .Include(i => i.BlogTag) // BlogTag bilgilerini dahil ediyoruz
                 .Where(i => i.BlogTagId == request.Id && !i.IsDeleted);
 
             var result = await query.Select(i => new BlogTagDto

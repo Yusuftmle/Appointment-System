@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,18 +16,28 @@ namespace Application.Queries.Blog
         public class GetAllBlogPostTaqQueryHandler : IRequestHandler<GetAllBlogPostTaqQuery, List<BlogTagDto>>
         {
             private readonly IBlogTagRepository _blogPostTagRepository;
-            private readonly IMapper mapper;
+           
 
-            public GetAllBlogPostTaqQueryHandler(IBlogTagRepository blogPostTagRepository, IMapper mapper)
+            public GetAllBlogPostTaqQueryHandler(IBlogTagRepository blogPostTagRepository)
             {
                 _blogPostTagRepository = blogPostTagRepository;
-                this.mapper = mapper;
+               
             }
 
             public async Task<List<BlogTagDto>> Handle(GetAllBlogPostTaqQuery request, CancellationToken cancellationToken)
             {
-                var Appointments = await _blogPostTagRepository.GetAll();
-                return await Task.FromResult(mapper.Map<List<BlogTagDto>>(Appointments));
-            }
+            //  AsQueryable kullanarak projection
+            return await _blogPostTagRepository.AsQueryable()
+                .AsNoTracking()
+                .Where(t => t.IsDeleted) //  Filtering eklenebilir
+                .OrderBy(t => t.Name)   //  Sorting eklenebilir
+                .Select(t => new BlogTagDto //  Database-level projection
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                  
+                })
+                .ToListAsync(cancellationToken); //  CancellationToken support
+        }
         }
 }

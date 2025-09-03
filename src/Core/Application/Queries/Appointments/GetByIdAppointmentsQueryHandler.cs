@@ -21,6 +21,7 @@ namespace Application.Queries.Appointments
             this.appointmentRepository = appointmentRepository;
            
         }
+        //deleted Include
 
         public async Task<AppointmentDto> Handle(GetByIdAppointmentsQuery request, CancellationToken cancellationToken)
         {
@@ -28,8 +29,7 @@ namespace Application.Queries.Appointments
 
             query = query
                .AsNoTracking()
-               .Include(i => i.User)
-               .Include(i => i.Service)
+              
                .Where(i => i.Id == request.Id && !i.IsDeleted); // filtre önemli!
 
             var result = await query.Select(i => new AppointmentDto()

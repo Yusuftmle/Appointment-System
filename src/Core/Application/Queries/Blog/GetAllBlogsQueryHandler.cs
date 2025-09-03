@@ -26,7 +26,8 @@ namespace Application.Queries.Blog
             var blogs = await _blogRepository.GetAll();
 
            
-                blogs = blogs.Where(b => b.IsPublished).ToList();
+                blogs =  blogs.Where(b => b.IsPublished)
+                .ToList();
             
 
             return _mapper.Map<List<BlogPostDto>>(blogs);

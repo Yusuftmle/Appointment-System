@@ -20,11 +20,12 @@ namespace Application.Queries.Service
             this.mapper = mapper;
             _serviceRepository = serviceRepository;
         }
-
+        //deleted TaskFromResult
+        //added configureAwait
         public async Task<List<ServiceDto>> Handle(GetServiceQuery request, CancellationToken cancellationToken)
         {
-           var services = await _serviceRepository.GetAll();
-            return await Task.FromResult(mapper.Map<List<ServiceDto>>(services));
+            var services = await _serviceRepository.GetAll().ConfigureAwait(false);
+            return mapper.Map<List<ServiceDto>>(services);
         }
     }
 }
